@@ -1,0 +1,38 @@
+id_parada,timestamp_falla,tipo_falla,componente_afectado,duracion_parada_min,accion_correctiva,tecnico_responsable
+PAR-001,2025-01-14 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
+PAR-002,2025-01-19 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,Rodamiento Principal de Apoyo,840,Reemplazo urgente de rodamientos de doble hilera y balanceo dinamico,Tec. Roberto Gomez
+PAR-003,2025-01-21 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,Rodamiento Principal de Apoyo,840,Reemplazo urgente de rodamientos de doble hilera y balanceo dinamico,Tec. Miguel Angel Rios
+PAR-004,2025-01-22 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Sofia Ramirez
+PAR-005,2025-01-25 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
+PAR-006,2025-01-28 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Roberto Gomez
+PAR-007,2025-02-11 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Miguel Angel Rios
+PAR-008,2025-02-16 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Sofia Ramirez
+PAR-009,2025-02-27 17:59:00,Fatiga Mecanica y Vibracion en Bancada,Cojinetes de Cabeza de Biela,840,Sustitucion de casquillos antifriccion y reapriete dinamometrico,Ing. Carlos Mendoza
+PAR-010,2025-03-16 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Roberto Gomez
+PAR-011,2025-04-04 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Miguel Angel Rios
+PAR-012,2025-04-18 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Sofia Ramirez
+PAR-013,2025-04-21 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
+PAR-014,2025-04-24 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Roberto Gomez
+PAR-015,2025-04-28 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Miguel Angel Rios
+PAR-016,2025-05-08 17:59:00,Fatiga Mecanica y Vibracion en Bancada,Cojinetes de Cabeza de Biela,840,Sustitucion de casquillos antifriccion y reapriete dinamometrico,Ing. Sofia Ramirez
+PAR-017,2025-05-13 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,Rodamiento Principal de Apoyo,840,Reemplazo urgente de rodamientos de doble hilera y balanceo dinamico,Ing. Carlos Mendoza
+PAR-018,2025-05-14 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Roberto Gomez
+PAR-019,2025-05-18 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,Rodamiento Principal de Apoyo,840,Reemplazo urgente de rodamientos de doble hilera y balanceo dinamico,Tec. Miguel Angel Rios
+PAR-020,2025-05-19 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Sofia Ramirez
+PAR-021,2025-05-31 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
+PAR-022,2025-06-11 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,Rodamiento Principal de Apoyo,840,Reemplazo urgente de rodamientos de doble hilera y balanceo dinamico,Tec. Roberto Gomez
+PAR-023,2025-06-12 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,Rodamiento Principal de Apoyo,840,Reemplazo urgente de rodamientos de doble hilera y balanceo dinamico,Tec. Miguel Angel Rios
+PAR-024,2025-06-14 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Sofia Ramirez
+PAR-025,2025-07-05 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
+PAR-026,2025-07-11 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Roberto Gomez
+PAR-027,2025-07-31 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,Rodamiento Principal de Apoyo,840,Reemplazo urgente de rodamientos de doble hilera y balanceo dinamico,Tec. Miguel Angel Rios
+PAR-028,2025-08-01 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Sofia Ramirez
+PAR-029,2025-08-06 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
+PAR-030,2025-08-12 17:59:00,Fatiga Mecanica y Vibracion en Bancada,Cojinetes de Cabeza de Biela,840,Sustitucion de casquillos antifriccion y reapriete dinamometrico,Tec. Roberto Gomez
+PAR-031,2025-08-23 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Miguel Angel Rios
+PAR-032,2025-09-06 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Sofia Ramirez
+PAR-033,2025-10-10 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
+PAR-034,2025-10-28 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Roberto Gomez
+PAR-035,2025-11-22 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Tec. Miguel Angel Rios
+PAR-036,2025-11-25 17:59:00,Fatiga Mecanica y Vibracion en Bancada,Cojinetes de Cabeza de Biela,840,Sustitucion de casquillos antifriccion y reapriete dinamometrico,Ing. Sofia Ramirez
+PAR-037,2025-12-01 17:59:00,Sobrecarga Electrica y Friccion Excesiva,Guias Deslizantes y Estator,840,"Ajuste de holgura de guias, lubricacion forzada y recalibracion de rele termico",Ing. Carlos Mendoza
