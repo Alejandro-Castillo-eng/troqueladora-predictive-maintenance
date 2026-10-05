@@ -31,3 +31,12 @@ ENV/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Copias locales y verificaciones temporales
+.backups/
+.verification/
+
+# Configuración local y credenciales
+.env
+.env.*
+!.env.example

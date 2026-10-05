@@ -43,7 +43,6 @@ SENSORES = [
     "temp_motor_c",
     "presion_hidraulica_bar",
     "vibracion_rms_mms",
-    "velocidad_cpm",
     "corriente_motor_a"
 ]
 
@@ -52,7 +51,6 @@ RANGOS_NOMINALES = {
     "temp_motor_c": {"nominal_mean": 52.5, "nominal_std": 2.0, "alerta": 60.0, "critico": 70.0, "unidad": " degC"},
     "presion_hidraulica_bar": {"nominal_mean": 214.0, "nominal_std": 3.0, "alerta": 200.0, "critico": 185.0, "unidad": "bar"},
     "vibracion_rms_mms": {"nominal_mean": 1.35, "nominal_std": 0.25, "alerta": 2.50, "critico": 4.00, "unidad": "mm/s"},
-    "velocidad_cpm": {"nominal_mean": 42.0, "nominal_std": 0.8, "alerta": 39.0, "critico": 35.0, "unidad": "cpm"},
     "corriente_motor_a": {"nominal_mean": 21.0, "nominal_std": 1.2, "alerta": 25.0, "critico": 29.0, "unidad": "A"}
 }
 

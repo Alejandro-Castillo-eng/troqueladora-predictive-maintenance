@@ -4,9 +4,9 @@ build_html.py
 Script constructor que genera 'index.html', un tablero web 100% autónomo (standalone)
 listo para ser alojado en GitHub Pages o abierto con doble clic en cualquier navegador.
 Incluye:
-1. Botón para ver TODA LA SECUENCIA COMPLETA de inicio a fin (2026-01-01 a 2026-12-26).
+1. Calendario para recorrer todas las lecturas por día, de inicio a fin del dataset.
 2. Botones para los 4 escenarios de secuencias operativas específicas (80 tomas consecutivas cada una).
-3. Modos de visualización: Secuencia Completa y Adquisición Progresiva dato a dato.
+3. Modos de visualización: Día Completo y Adquisición Progresiva dato a dato.
 """
 
 import json
@@ -19,10 +19,10 @@ def generate_telemetry_tomas():
     """Genera la secuencia completa de inicio a fin y los 4 escenarios específicos."""
     path_2026 = "telemetria_troqueladora_test_2026.csv"
     if not os.path.exists(path_2026):
-        path_2026 = "telemetria_troqueladora.csv"
+        raise FileNotFoundError("Se requiere el dataset de test de 2026; no se sustituye por entrenamiento.")
         
     df = pd.read_csv(path_2026)
-    sensores = ["temp_motor_c", "presion_hidraulica_bar", "vibracion_rms_mms", "velocidad_cpm", "corriente_motor_a"]
+    sensores = ["temp_motor_c", "presion_hidraulica_bar", "vibracion_rms_mms", "corriente_motor_a"]
     for s in sensores:
         df[f"{s}_mean_15"] = df[s].rolling(15, min_periods=1).mean()
         df[f"{s}_mean_60"] = df[s].rolling(60, min_periods=1).mean()
@@ -34,7 +34,6 @@ def generate_telemetry_tomas():
         "temp_motor_c": (52.5, 2.0),
         "presion_hidraulica_bar": (214.0, 3.0),
         "vibracion_rms_mms": (1.35, 0.25),
-        "velocidad_cpm": (42.0, 0.8),
         "corriente_motor_a": (21.0, 1.2)
     }
     for s, (m, sd) in nom_vals.items():
@@ -51,56 +50,101 @@ def generate_telemetry_tomas():
     model = bundle["modelo"]
     feature_cols = bundle["feature_cols"]
 
-    # 1. Secuencia Completa de Inicio a Fin (600 tomas distribuidas uniformemente)
-    N_COMPLETA = 600
-    idx_completa = np.linspace(0, len(df) - 1, N_COMPLETA, dtype=int)
-    idx_completa[0] = 0
-    idx_completa[-1] = len(df) - 1
-    df_completa = df.iloc[idx_completa].copy()
+    # Actualizar las exportaciones auxiliares conservando sus fechas y formato.
+    for json_path in ["samples_telemetria.json", "scenarios_telemetria.json", "scenarios_tomas.json"]:
+        if not os.path.exists(json_path):
+            continue
+        with open(json_path, encoding="utf-8") as f:
+            exported = json.load(f)
+        groups = exported.values() if isinstance(exported, dict) else [exported]
+        records = [record for group in groups for record in group]
+        timestamp_index = pd.Index(pd.to_datetime(df["timestamp"]))
+        indices = timestamp_index.get_indexer(pd.to_datetime([r["t"] for r in records]))
+        if (indices < 0).any():
+            raise ValueError(f"Hay fechas sin telemetría en {json_path}")
+        predictions = model.predict(df.iloc[indices][feature_cols])
+        for record, prediction, index in zip(records, predictions, indices):
+            record.pop("vel", None)
+            record.pop("vel_m", None)
+            record["rul"] = float(prediction)
+            for field, column in [("temp", "temp_motor_c"), ("pres", "presion_hidraulica_bar"), ("vib", "vibracion_rms_mms"), ("corr", "corriente_motor_a")]:
+                record[field] = float(df.iloc[index][column])
+                record[field + "_m"] = float(df.iloc[index][column + "_mean_60"])
+            record["estres"] = float(df.iloc[index]["indice_estres_termomecanico"])
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(exported, f, ensure_ascii=False)
 
-    # 2. Cuatro segmentos de 80 filas estrictamente consecutivas
-    raw_segments = {
-        "completa": df_completa,
-        "normal": df.iloc[100:180].copy(),       # Jan 01 09:40 a 10:59
-        "pico": df.iloc[2075:2155].copy(),        # Jan 04 12:35 a 13:54 (Pico en toma #38 / 13:12)
-        "desgaste": df.iloc[3873:3953].copy(),    # Jan 07 12:33 a 13:52 (Desgaste sostenido)
-        "critico": df.iloc[81220:81300].copy()    # May 20 09:25 a 10:44 (Falla crítica inminente RUL < 0.2d)
+    # Exportar las lecturas exactas del CSV; solo las características móviles son derivadas.
+    predictions = model.predict(df[feature_cols])
+    records = pd.DataFrame({
+        "toma": np.arange(1, len(df) + 1), "fila_csv": np.arange(2, len(df) + 2),
+        "t": df["timestamp"], "hm": df["timestamp"].str[11:16], "date": df["timestamp"].str[:10],
+        "temp": df["temp_motor_c"], "pres": df["presion_hidraulica_bar"],
+        "vib": df["vibracion_rms_mms"], "corr": df["corriente_motor_a"],
+        "temp_m": df["temp_motor_c_mean_60"], "pres_m": df["presion_hidraulica_bar_mean_60"],
+        "vib_m": df["vibracion_rms_mms_mean_60"], "corr_m": df["corriente_motor_a_mean_60"],
+        "rul": predictions, "estres": df["indice_estres_termomecanico"]
+    }).to_dict("records")
+    scenarios = {"completa": records}
+    metadata = {}
+    timestamps = pd.to_datetime(df["timestamp"])
+    # Umbrales existentes del tablero; no se ajustan para conseguir escenarios.
+    configs = {
+        "vib": ("vibracion_rms_mms", "Vibración RMS", "mm/s", 2.20, 3.80, 2.5, 1.6, False),
+        "temp": ("temp_motor_c", "Temperatura Motor", "°C", 57.5, 68.0, 60.0, 54.0, False),
+        "pres": ("presion_hidraulica_bar", "Presión Hidráulica", "bar", 204.0, 185.0, 200.0, 210.0, True),
+        "corr": ("corriente_motor_a", "Corriente Motor", "A", 23.5, 28.5, 25.0, 22.5, False)
     }
-
-    scenarios = {}
-    for name, seg in raw_segments.items():
-        preds = model.predict(seg[feature_cols])
-        preds = np.clip(preds, 0.05, 10.0)
-        seg["pred_rul"] = preds
-        tomas = []
-        for i, (_, r) in enumerate(seg.iterrows()):
-            ts_str = str(r["timestamp"])
-            tomas.append({
-                "toma": i + 1,
-                "t": ts_str[:19],
-                "hm": ts_str[11:16],
-                "date": ts_str[:10],
-                "temp": round(float(r["temp_motor_c"]), 1),
-                "pres": round(float(r["presion_hidraulica_bar"]), 1),
-                "vib": round(float(r["vibracion_rms_mms"]), 2),
-                "vel": round(float(r["velocidad_cpm"]), 1),
-                "corr": round(float(r["corriente_motor_a"]), 1),
-                "temp_m": round(float(r["temp_motor_c_mean_60"]), 1),
-                "pres_m": round(float(r["presion_hidraulica_bar_mean_60"]), 1),
-                "vib_m": round(float(r["vibracion_rms_mms_mean_60"]), 2),
-                "vel_m": round(float(r["velocidad_cpm_mean_60"]), 1),
-                "corr_m": round(float(r["corriente_motor_a_mean_60"]), 1),
-                "rul": round(float(r["pred_rul"]), 2),
-                "estres": round(float(r["indice_estres_termomecanico"]), 2)
-            })
-        scenarios[name] = tomas
-
-    return scenarios
+    for key, (column, label, unit, warning, critical, spike, baseline, low) in configs.items():
+        raw = df[column]
+        mean = df[f"{column}_mean_60"]
+        normal = mean > warning if low else mean < warning
+        wear = (mean <= warning) & (mean > critical) if low else (mean >= warning) & (mean < critical)
+        severe = mean <= critical if low else mean >= critical
+        spike_mask = (raw < spike) & (mean > baseline) if low else (raw > spike) & (mean < baseline)
+        # El pico debe volver al rango de alerta en la lectura siguiente.
+        spike_mask &= raw.shift(-1) > spike if low else raw.shift(-1) < spike
+        for kind, mask in [("normal", normal), ("pico", spike_mask), ("desgaste", wear), ("critico", severe)]:
+            scenario_key = f"{key}_{kind}"
+            chosen = None
+            # Desgaste y crítico: 15 lecturas consecutivas cumpliendo el criterio.
+            candidates = mask if kind == "pico" else mask.rolling(15, min_periods=15).sum().eq(15)
+            for anchor in np.flatnonzero(candidates.to_numpy()):
+                start = max(0, int(anchor) - 37)
+                stop = start + 80
+                if stop > len(df):
+                    continue
+                times = timestamps.iloc[start:stop]
+                if times.dt.date.nunique() != 1 or not times.diff().iloc[1:].eq(pd.Timedelta(minutes=1)).all():
+                    continue
+                if kind == "normal" and not mask.iloc[start:stop].all():
+                    continue
+                chosen = (start, stop, int(anchor))
+                break
+            info = {"sensor": label, "column": column, "unit": unit, "kind": kind,
+                    "available": chosen is not None, "dataset": path_2026,
+                    "warning": warning, "critical": critical,
+                    "criterion": (f"Lectura {'<' if low else '>'} {spike}, media 60 min {'>' if low else '<'} {baseline}, retorno en la siguiente lectura" if kind == "pico" else
+                        f"Media 60 min: normal {'>' if low else '<'} {warning}; desgaste entre {warning} y {critical}; crítico {'<=' if low else '>='} {critical}. Desgaste/crítico requieren 15 lecturas consecutivas.")}
+            if chosen:
+                start, stop, anchor = chosen
+                scenarios[scenario_key] = records[start:stop]
+                info.update({"start": records[start]["t"], "end": records[stop-1]["t"],
+                             "first_csv_row": start + 2, "last_csv_row": stop + 1,
+                             "anchor_index": anchor - start, "anchor_time": records[anchor]["t"],
+                             "anchor_value": float(raw.iloc[anchor]), "anchor_mean60": float(mean.iloc[anchor])})
+            else:
+                scenarios[scenario_key] = []
+                info["reason"] = "No se encontró una ventana de 80 lecturas consecutivas que cumpla el criterio en el dataset de test."
+            metadata[scenario_key] = info
+    with open("scenarios_sensores_test.json", "w", encoding="utf-8") as f:
+        json.dump({"metadata": metadata, "scenarios": {k:v for k,v in scenarios.items() if k != "completa"}}, f, ensure_ascii=False)
+    return scenarios, metadata
 
 
 def build():
-    scenarios = generate_telemetry_tomas()
-    scenarios_json = json.dumps(scenarios)
+    scenarios, scenario_metadata = generate_telemetry_tomas()
+    scenarios_json = json.dumps(scenarios, separators=(',', ':'))
 
     with open('fallas_embedded.json', 'r', encoding='utf-8') as f:
         fallas_json = f.read()
@@ -110,6 +154,10 @@ def build():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        try {{ document.documentElement.dataset.theme = localStorage.getItem('andon-theme') === 'light' ? 'light' : 'dark'; }}
+        catch (_) {{ document.documentElement.dataset.theme = 'dark'; }}
+    </script>
     <title>Tablero Andon 4.0 - Secuencia Completa de Telemetría (Inicio a Fin)</title>
     <style>
         :root {{
@@ -118,7 +166,7 @@ def build():
             --bg-card-sub: #1e293b;
             --border-color: #2b3a55;
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-muted: #b6c2d3;
             --green-main: #10b981;
             --green-glow: rgba(16, 185, 129, 0.25);
             --yellow-main: #f59e0b;
@@ -126,7 +174,55 @@ def build():
             --red-main: #ef4444;
             --red-glow: rgba(239, 68, 68, 0.4);
             --blue-accent: #38bdf8;
+            --preset-active-text: #082f49;
+            color-scheme: dark;
+            --chart-bg: #0f1627;
+            --chart-grid: #334155;
+            --chart-raw: #64748b;
+            --chart-mean: #f59e0b;
+            --chart-label-bg: rgba(15, 23, 42, 0.95);
+            --chart-label-text: #ffffff;
         }}
+
+        :root[data-theme="light"] {{
+            color-scheme: light;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-card-sub: #e8eef5;
+            --border-color: #c3cedc;
+            --text-main: #152238;
+            --text-muted: #475569;
+            --blue-accent: #0369a1;
+            --preset-active-text: #ffffff;
+            --green-main: #047857;
+            --yellow-main: #92400e;
+            --red-main: #b91c1c;
+            --chart-bg: #f8fafc;
+            --chart-grid: #cbd5e1;
+            --chart-raw: #64748b;
+            --chart-mean: #b45309;
+            --chart-label-bg: rgba(255, 255, 255, 0.97);
+            --chart-label-text: #152238;
+        }}
+        [data-theme="light"] .andon-header {{ background: linear-gradient(90deg, #ffffff, #e8eef5); }}
+        [data-theme="light"] .header-title-box h1,
+        [data-theme="light"] .sensor-reading,
+        [data-theme="light"] .btn-preset,
+        [data-theme="light"] .chart-select,
+        [data-theme="light"] .sensor-chart h4,
+        [data-theme="light"] td {{ color: var(--text-main); }}
+        [data-theme="light"] .rul-sub,
+        [data-theme="light"] #diagMessage,
+        [data-theme="light"] .header-meta > div {{ color: var(--text-muted) !important; }}
+        [data-theme="light"] .rul-val.normal {{ color: #047857; }}
+        [data-theme="light"] .rul-val.warning {{ color: #92400e; }}
+        [data-theme="light"] .rul-val.critical {{ color: #b91c1c; }}
+        [data-theme="light"] .btn-preset:hover:not(.active):not(:disabled) {{ background: #dce7f3; }}
+        [data-theme="light"] .btn-play {{ color: white; }}
+        [data-theme="light"] .btn-play:hover {{ background: #075985; }}
+        [data-theme="light"] .status-title {{ color: #ffffff; }}
+        [data-theme="light"] td {{ border-bottom-color: #e2e8f0; }}
+        #themeToggle {{ margin-top: 12px; }}
 
         * {{
             box-sizing: border-box;
@@ -140,6 +236,8 @@ def build():
             color: var(--text-main);
             padding: 20px;
             min-height: 100vh;
+            font-size: 16px;
+            line-height: 1.5;
         }}
 
         .container {{
@@ -172,13 +270,13 @@ def build():
 
         .header-title-box p {{
             color: var(--text-muted);
-            font-size: 13px;
+            font-size: 16px;
             margin-top: 4px;
         }}
 
         .header-meta {{
             text-align: right;
-            font-size: 13px;
+            font-size: 16px;
         }}
 
         .shift-badge {{
@@ -233,7 +331,7 @@ def build():
         }}
 
         .status-desc {{
-            font-size: 14px;
+            font-size: 16px;
             margin-top: 6px;
             color: #e2e8f0;
         }}
@@ -263,7 +361,7 @@ def build():
         }}
 
         .card-label {{
-            font-size: 13px;
+            font-size: 16px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
@@ -282,7 +380,7 @@ def build():
         .rul-val.critical {{ color: #f87171; }}
 
         .rul-sub {{
-            font-size: 14px;
+            font-size: 16px;
             color: #cbd5e1;
         }}
 
@@ -324,7 +422,7 @@ def build():
             border-radius: 8px;
             padding: 16px 20px;
             margin-bottom: 20px;
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.5;
         }}
 
@@ -362,7 +460,7 @@ def build():
         }}
 
         .sensor-title {{
-            font-size: 12px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -376,7 +474,7 @@ def build():
         }}
 
         .sensor-unit {{
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--text-muted);
         }}
@@ -385,7 +483,7 @@ def build():
             display: inline-block;
             padding: 3px 8px;
             border-radius: 6px;
-            font-size: 10.5px;
+            font-size: 16px;
             font-weight: 800;
             letter-spacing: 0.5px;
             width: fit-content;
@@ -399,7 +497,7 @@ def build():
             margin-top: 10px;
             border-top: 1px solid var(--border-color);
             padding-top: 6px;
-            font-size: 11.5px;
+            font-size: 16px;
             color: var(--text-muted);
             line-height: 1.4;
         }}
@@ -414,7 +512,7 @@ def build():
         }}
 
         .control-panel h3 {{
-            font-size: 16px;
+            font-size: 20px;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -435,29 +533,29 @@ def build():
             border: 1px solid var(--border-color);
             border-radius: 8px;
             background: var(--bg-card-sub);
-            color: #ffffff;
-            font-size: 12.5px;
+            color: var(--text-main);
+            font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
         }}
 
-        .btn-preset:hover {{
-            border-color: var(--blue-accent);
+        .btn-preset:hover:not(.active):not(:disabled) {{
+            border-color: var(--text-muted);
             background: #253349;
         }}
 
         .btn-preset.active {{
             border-color: var(--blue-accent);
-            background: rgba(56, 189, 248, 0.18);
-            color: var(--blue-accent);
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+            background: var(--blue-accent);
+            color: var(--preset-active-text);
+            box-shadow: inset 0 0 0 1px var(--blue-accent);
         }}
 
-        .btn-preset.highlight-all {{
-            border-color: #38bdf8;
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2) 0%, rgba(30, 41, 59, 0.8) 100%);
+        .btn-preset:focus-visible {{
+            outline: 2px solid var(--text-muted);
+            outline-offset: 3px;
         }}
 
         .timeline-box {{
@@ -487,7 +585,7 @@ def build():
             border-radius: 6px;
             font-weight: 700;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 16px;
             white-space: nowrap;
             transition: all 0.2s ease;
         }}
@@ -504,7 +602,7 @@ def build():
             border-radius: 6px;
             font-weight: 800;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 16px;
             white-space: nowrap;
         }}
 
@@ -542,14 +640,24 @@ def build():
             border: 1px solid var(--border-color);
             padding: 7px 12px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 16px;
             cursor: pointer;
         }}
 
-        canvas#trendChart {{
+        .sensor-charts {{
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }}
+        .sensor-chart {{ min-width: 0; }}
+        .sensor-chart h4 {{ margin: 0 0 10px; font-size: 16px; color: #cbd5e1; }}
+        @media (max-width: 640px) {{
+            .sensor-charts {{ grid-template-columns: 1fr; }}
+        }}
+        canvas.sensor-trend {{
             width: 100%;
-            height: 310px;
-            background: #0f1627;
+            height: 280px;
+            background: var(--chart-bg);
             border-radius: 8px;
             display: block;
         }}
@@ -570,7 +678,7 @@ def build():
         table {{
             width: 100%;
             border-collapse: collapse;
-            font-size: 12.5px;
+            font-size: 16px;
             text-align: left;
         }}
 
@@ -599,7 +707,7 @@ def build():
             margin-top: 30px;
             padding: 16px;
             color: var(--text-muted);
-            font-size: 12px;
+            font-size: 16px;
             border-top: 1px solid var(--border-color);
         }}
 
@@ -614,8 +722,10 @@ def build():
             .header-meta {{ text-align: center; }}
         }}
     </style>
+    <link rel="stylesheet" href="daily_summary.css">
 </head>
 <body>
+    <div class="dashboard-layout">
     <div class="container">
         <!-- HEADER ANDON -->
         <header class="andon-header">
@@ -625,7 +735,8 @@ def build():
             </div>
             <div class="header-meta">
                 <span class="shift-badge" id="sequenceBadge">SECUENCIA COMPLETA (INICIO A FIN)</span>
-                <div style="color: #94a3b8;">Estampa de la Toma: <b id="clockDisplay">2026-01-01 08:00:00</b></div>
+                <div style="color: #b6c2d3;">Estampa de la Toma: <b id="clockDisplay">2026-01-01 08:00:00</b></div>
+                <button type="button" class="btn-action" id="themeToggle" onclick="toggleTheme()" aria-pressed="false">☀️ Modo claro</button>
             </div>
         </header>
 
@@ -646,7 +757,7 @@ def build():
             <div class="card health-card">
                 <div class="card-label">Índice de Salud de Máquina</div>
                 <div class="health-val" id="healthValue" style="color: var(--green-main);">98.5%</div>
-                <div style="font-size: 13px; color: var(--text-muted);" id="healthDesc">Condición: <b>Excelente</b></div>
+                <div style="font-size: 16px; color: var(--text-muted);" id="healthDesc">Condición: <b>Excelente</b></div>
                 <div class="health-bar-bg">
                     <div class="health-bar-fill" id="healthBarFill"></div>
                 </div>
@@ -655,7 +766,7 @@ def build():
 
         <!-- DIAGNÓSTICO DE CAUSA RAÍZ -->
         <div id="diagnosisBox" class="diagnosis-box">
-            <b style="color: var(--green-main); font-size: 15px;" id="diagTitle">✓ DIAGNÓSTICO DE CONDICIÓN:</b><br>
+            <b style="color: var(--green-main); font-size: 18px;" id="diagTitle">✓ DIAGNÓSTICO DE CONDICIÓN:</b><br>
             <span id="diagMessage" style="color: #cbd5e1;">
                 Todos los subsistemas mecánicos, hidráulicos y eléctricos reportan valores nominales. El desgaste acumulado es mínimo.
             </span>
@@ -719,25 +830,35 @@ def build():
         <!-- PANEL DE SIMULACIÓN Y PRESETS -->
         <div class="control-panel">
             <h3>🎮 Centro de Telemetría: Secuencia de Tomas de Datos (Fila a Fila)</h3>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-                Selecciona <b>Toda la Secuencia Completa (Inicio a Fin)</b> para recorrer el ciclo entero o elige cualquiera de los 4 escenarios para inspeccionar la respuesta del modelo toma a toma:
-            </p>
 
+            <div class="timeline-box" style="margin-bottom: 12px;">
+                <label for="scenarioSensor">Escenarios del sensor:</label>
+                <select id="scenarioSensor" class="chart-select" onchange="selectScenarioSensor(this.value)">
+                    <option value="vib">Vibración RMS</option><option value="temp">Temperatura Motor</option>
+                    <option value="pres">Presión Hidráulica</option><option value="corr">Corriente Motor</option>
+                </select>
+            </div>
             <div class="presets-row">
-                <button class="btn-preset active highlight-all" id="btnPresetCompleta" onclick="selectScenario('completa')">🌐 Toda la Secuencia Completa (Inicio a Fin)</button>
+                <button class="btn-preset active" id="btnPresetCompleta" onclick="selectScenario('completa')">📅 Telemetría por Día</button>
                 <button class="btn-preset" id="btnPreset1" onclick="selectScenario('normal')">🟢 1. Secuencia Normal (80 Tomas)</button>
                 <button class="btn-preset" id="btnPreset2" onclick="selectScenario('pico')">⚡ 2. Secuencia Pico Transitorio (80 Tomas)</button>
                 <button class="btn-preset" id="btnPreset3" onclick="selectScenario('desgaste')">🟡 3. Secuencia Desgaste Sostenido (80 Tomas)</button>
                 <button class="btn-preset" id="btnPreset4" onclick="selectScenario('critico')">🔴 4. Secuencia Falla Inminente (80 Tomas)</button>
             </div>
 
+            <div class="timeline-box" style="margin-bottom: 12px;">
+                <label for="dayCalendar">Fecha de telemetría:</label>
+                <input type="date" id="dayCalendar" class="chart-select" min="{scenarios['completa'][0]['date']}" max="{scenarios['completa'][-1]['date']}" value="{scenarios['completa'][0]['date']}" onchange="selectDay(this.value)">
+                <button class="btn-action" onclick="changeDay(-1)">◀ Día anterior</button>
+                <button class="btn-action" onclick="changeDay(1)">Día siguiente ▶</button>
+                <span id="daySummary" style="color: var(--text-muted);"></span>
+            </div>
             <div class="timeline-box">
                 <button class="btn-play" id="playBtn" onclick="togglePlay()">▶ Iniciar Reproducción (Toma a Toma)</button>
                 <button class="btn-action" onclick="stepToma(-1)">⏮ -1 Toma</button>
                 <button class="btn-action" onclick="stepToma(1)">⏭ +1 Toma (Nueva Fila)</button>
-                <button class="btn-action" onclick="stepToma(10)">⏩ +10 Tomas</button>
-                <input type="range" id="timeSlider" class="timeline-slider" min="0" max="599" value="0" oninput="onSliderChange(this.value)">
-                <span id="sliderTimeText" style="font-size: 13px; font-weight: 700; min-width: 270px; text-align: right; color: var(--blue-accent);">Toma #1 de 600 · 2026-01-01 08:00:00</span>
+                <input type="range" id="timeSlider" class="timeline-slider" min="0" max="{len(scenarios['completa']) - 1}" step="1" value="0" oninput="onSliderChange(this.value)">
+                <span id="sliderTimeText" style="font-size: 16px; font-weight: 700; min-width: 270px; text-align: right; color: var(--blue-accent);">Toma #1 de {len(scenarios['completa'])} · {scenarios['completa'][0]['t']}</span>
             </div>
         </div>
 
@@ -745,28 +866,27 @@ def build():
         <div class="chart-card">
             <div class="chart-header">
                 <div>
-                    <h3 style="font-size: 16px;" id="chartTitle">📈 Toda la Secuencia Completa de Tomas (Inicio a Fin: 2026)</h3>
-                    <p style="font-size: 12.5px; color: var(--text-muted);" id="chartSubtitle">
-                        Mostrando toda la secuencia cronológica de inicio a fin (desde la primera toma 2026-01-01 hasta la última 2026-12-26).
+                    <h3 style="font-size: 20px;" id="chartTitle">📈 Tomas del día</h3>
+                    <p style="font-size: 16px; color: var(--text-muted);" id="chartSubtitle">
+                        Elige una fecha para ver sus lecturas minuto a minuto.
                     </p>
                 </div>
                 <div class="chart-controls">
                     <select id="drawModeSelect" class="chart-select" onchange="updateChart()">
-                        <option value="full" selected>📊 Secuencia Completa (Trazo Total con Cursor)</option>
-                        <option value="progressive">📈 Adquisición Progresiva (Aparece cada nuevo dato)</option>
-                    </select>
-                    <select id="sensorChartSelect" class="chart-select" onchange="updateChart()">
-                        <option value="vib">Vibración RMS (mm/s)</option>
-                        <option value="temp">Temperatura Motor (°C)</option>
-                        <option value="pres">Presión Hidráulica (bar)</option>
-                        <option value="corr">Corriente Motor (A)</option>
+                        <option value="progressive" selected>📈 Tomas del día (Adquisición Progresiva)</option>
+                        <option value="full">📊 Día completo (Trazo Total con Cursor)</option>
                     </select>
                 </div>
             </div>
-            <canvas id="trendChart"></canvas>
-            <div style="display: flex; gap: 20px; font-size: 12px; margin-top: 10px; justify-content: flex-end; flex-wrap: wrap;">
-                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 2px; background: #64748b;"></span> Lectura Instantánea (con ruido en cada toma)</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 3px; background: #f59e0b;"></span> Media Móvil 60 min (Filtro de Desgaste)</span>
+            <div class="sensor-charts">
+                <section class="sensor-chart"><h4>Vibración RMS (mm/s)</h4><canvas id="trendVib" class="sensor-trend" aria-label="Evolución de vibración RMS"></canvas></section>
+                <section class="sensor-chart"><h4>Temperatura Motor (°C)</h4><canvas id="trendTemp" class="sensor-trend" aria-label="Evolución de temperatura del motor"></canvas></section>
+                <section class="sensor-chart"><h4>Presión Hidráulica (bar)</h4><canvas id="trendPres" class="sensor-trend" aria-label="Evolución de presión hidráulica"></canvas></section>
+                <section class="sensor-chart"><h4>Corriente Motor (A)</h4><canvas id="trendCorr" class="sensor-trend" aria-label="Evolución de corriente del motor"></canvas></section>
+            </div>
+            <div style="display: flex; gap: 20px; font-size: 16px; margin-top: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 2px; background: var(--chart-raw);"></span> Lectura Instantánea (con ruido en cada toma)</span>
+                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 3px; background: var(--chart-mean);"></span> Media Móvil 60 min (Filtro de Desgaste)</span>
                 <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #38bdf8; border: 2px solid #ffffff;"></span> Toma / Fila Actual</span>
             </div>
         </div>
@@ -774,8 +894,8 @@ def build():
         <!-- BITÁCORA HISTÓRICA DE PARADAS -->
         <div class="table-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="font-size: 16px;">📋 Registro Histórico de Paradas de Mantenimiento (Ground Truth)</h3>
-                <span style="font-size: 12px; color: var(--text-muted);">37 eventos históricos documentados</span>
+                <h3 style="font-size: 20px;">📋 Registro Histórico de Paradas de Mantenimiento (Ground Truth)</h3>
+                <span style="font-size: 16px; color: var(--text-muted);">37 eventos históricos documentados</span>
             </div>
             <div class="table-wrap">
                 <table id="fallasTable">
@@ -800,19 +920,71 @@ def build():
             Tablero de Mantenimiento Predictivo Andon · Prensa Troqueladora 500T · Secuencia Completa de Telemetría (Inicio a Fin)
         </footer>
     </div>
+    <aside class="daily-summary-panel" aria-labelledby="dailySummaryTitle">
+        <h2 id="dailySummaryTitle">📋 Resumen del día</h2>
+        <p id="dailySummaryProgress" class="daily-summary-progress">Resumen pendiente</p>
+        <p id="dailySummaryPending" class="daily-summary-muted">El resumen se genera al llegar a la última toma registrada del día.</p>
+        <div id="dailySummaryContent" aria-live="polite" hidden></div>
+    </aside>
+    </div>
 
     <!-- SCRIPT DE INTELIGENCIA PREDICTIVA Y DINÁMICA -->
+    <script src="daily_summary.js"></script>
     <script>
         const SCENARIOS = {scenarios_json};
         const FALLAS = {fallas_json};
+        const SCENARIO_METADATA = {json.dumps(scenario_metadata, ensure_ascii=False)};
+        let selectedScenarioSensor = 'vib';
+        const DAYS = new Map();
+        for (const sample of SCENARIOS.completa) {{
+            if (!DAYS.has(sample.date)) DAYS.set(sample.date, []);
+            DAYS.get(sample.date).push(sample);
+        }}
+        const availableDays = Array.from(DAYS.keys()).sort();
+        let selectedDay = availableDays[0];
 
         let activeScenarioKey = 'completa';
         let currentTomaIdx = 0;
         let isPlaying = false;
         let playInterval = null;
+        const chartCaches = new Map();
+
+        function updateThemeButton() {{
+            const light = document.documentElement.dataset.theme === 'light';
+            const button = document.getElementById('themeToggle');
+            button.innerText = light ? '🌙 Modo oscuro' : '☀️ Modo claro';
+            button.setAttribute('aria-pressed', String(light));
+            button.setAttribute('aria-label', light ? 'Cambiar a modo oscuro' : 'Cambiar a modo claro');
+        }}
+
+        function toggleTheme() {{
+            const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+            document.documentElement.dataset.theme = next;
+            try {{ localStorage.setItem('andon-theme', next); }} catch (_) {{}}
+            updateThemeButton();
+            chartCaches.clear();
+            updateChart();
+        }}
 
         function getActiveList() {{
-            return SCENARIOS[activeScenarioKey];
+            return activeScenarioKey === 'completa' ? (DAYS.get(selectedDay) || []) : SCENARIOS[activeScenarioKey];
+        }}
+
+        function selectDay(date, keepPlaying = false) {{
+            if (!date) return;
+            if (!keepPlaying && isPlaying) togglePlay();
+            selectedDay = date;
+            activeScenarioKey = 'completa';
+            selectScenario('completa', keepPlaying);
+        }}
+
+        function changeDay(delta, keepPlaying = false) {{
+            const nextDay = delta > 0
+                ? availableDays.find(date => date > selectedDay)
+                : availableDays.slice().reverse().find(date => date < selectedDay);
+            if (!nextDay) return false;
+            selectDay(nextDay, keepPlaying);
+            return true;
         }}
 
         function renderTable() {{
@@ -852,17 +1024,17 @@ def build():
 
             if (esCritico && !esPicoAislado) {{
                 estado = "CRITICO";
-                rulDias = Math.min(predRul, 0.85);
+
             }} else if (esAdvertencia && !esPicoAislado) {{
                 estado = "ADVERTENCIA";
-                rulDias = Math.max(1.1, Math.min(predRul, 4.5));
+
             }} else {{
                 estado = "NORMAL";
-                rulDias = Math.max(predRul, 7.5);
+
             }}
 
             const sensorDevs = [
-                {{ name: "Vibración RMS Rodamientos", z: Math.max(0, (vibM60 - 1.35) / 0.25), comp: "Rodamiento Principal de Apoyo" }},
+                {{ name: "Vibración RMS del Troquel", z: Math.max(0, (vibM60 - 1.35) / 0.25), comp: "Troquel" }},
                 {{ name: "Temperatura Motor", z: Math.max(0, (tempM60 - 52.5) / 2.0), comp: "Bobinado y Sistema de Ventilación" }},
                 {{ name: "Presión Hidráulica", z: Math.max(0, (214.0 - presM60) / 3.0), comp: "Bomba Hidráulica y Válvula de Alivio" }},
                 {{ name: "Corriente Eléctrica", z: Math.max(0, (corrM60 - 21.0) / 1.2), comp: "Estator y Fricción de Guías" }}
@@ -882,6 +1054,25 @@ def build():
 
         function updateUI(idx) {{
             const list = getActiveList();
+            if (!list.length) {{
+                currentTomaIdx = 0;
+                for (const id of ['valTemp', 'valPres', 'valVib', 'valCorr', 'meanTemp', 'meanPres', 'meanVib', 'meanCorr', 'rulValue', 'healthValue']) {{
+                    document.getElementById(id).innerText = '—';
+                }}
+                for (const id of ['badgeTemp', 'badgePres', 'badgeVib', 'badgeCorr']) setBadge(id, 'normal', 'SIN DATOS');
+                document.getElementById('healthBarFill').style.width = '0%';
+                document.getElementById('healthDesc').innerText = 'Sin datos';
+                document.getElementById('clockDisplay').innerText = selectedDay;
+                document.getElementById('sliderTimeText').innerText = 'Sin tomas para esta fecha';
+                document.getElementById('statusTitle').innerText = 'SIN LECTURAS REGISTRADAS';
+                document.getElementById('statusDesc').innerText = 'Selecciona otro día en el calendario.';
+                document.getElementById('rulSubtext').innerText = 'Sin predicción para esta fecha.';
+                document.getElementById('diagTitle').innerText = 'SIN DATOS';
+                document.getElementById('diagMessage').innerText = 'No hay lecturas registradas para evaluar este día.';
+                DailySummary.update(null, DAYS, calculateRULAndState, selectedDay);
+                updateChart();
+                return;
+            }}
             if (idx >= list.length) idx = list.length - 1;
             if (idx < 0) idx = 0;
             currentTomaIdx = idx;
@@ -889,7 +1080,7 @@ def build():
             const diag = calculateRULAndState(sample);
 
             document.getElementById('clockDisplay').innerText = sample.t;
-            document.getElementById('sliderTimeText').innerText = `Secuencia: Toma #${{sample.toma}} de ${{list.length}} · ${{sample.t}}`;
+            document.getElementById('sliderTimeText').innerText = `Toma #${{idx + 1}} de ${{list.length}} · ${{sample.t}}`;
             document.getElementById('timeSlider').value = idx;
 
             document.getElementById('valTemp').innerText = sample.temp.toFixed(1);
@@ -927,7 +1118,7 @@ def build():
                 title.innerText = '🟢 ESTADO: OPERACIÓN NORMAL';
                 desc.innerText = 'Todos los sensores operan dentro del régimen nominal. Equipo estable.';
                 rulVal.className = 'rul-val normal';
-                rulVal.innerText = '> 10.0 DÍAS / ÓPTIMO';
+                rulVal.innerText = `RUL DEL MODELO: ${{sample.rul.toFixed(2)}} DÍAS`;
                 rulSub.innerText = 'Operación estable. No se proyecta parada no programada a corto plazo.';
 
                 document.getElementById('healthValue').style.color = 'var(--green-main)';
@@ -959,7 +1150,7 @@ def build():
                 diagBox.className = 'diagnosis-box warning';
                 diagTitle.style.color = 'var(--yellow-main)';
                 diagTitle.innerText = '⚠️ DIAGNÓSTICO DE CAUSA RAÍZ (DESGASTE DETECTADO):';
-                diagMsg.innerHTML = `Disparo liderado por: <b>${{diag.sensorCritico}}</b> (+${{diag.maxZ.toFixed(1)}}σ sobre media nominal).<br>• Componente bajo estrés: <b>${{diag.componenteCritico}}</b>.<br>• Acción recomendada: Inspección y lubricación preventiva en el cambio de turno.`;
+                diagMsg.innerHTML = `Disparo liderado por: <b>${{diag.sensorCritico}}</b>.<br>• Componente bajo estrés: <b>${{diag.componenteCritico}}</b>.<br>• Acción recomendada: Inspección y lubricación preventiva en el cambio de turno.`;
             }} else {{
                 banner.className = 'status-banner critical';
                 title.innerText = '🔴 PARADA CRÍTICA INMINENTE';
@@ -975,9 +1166,10 @@ def build():
                 diagBox.className = 'diagnosis-box critical';
                 diagTitle.style.color = 'var(--red-main)';
                 diagTitle.innerText = '🚨 DIAGNÓSTICO DE CAUSA RAÍZ - FALLA INMINENTE:';
-                diagMsg.innerHTML = `Sobreesfuerzo severo en: <b>${{diag.sensorCritico}}</b> (+${{diag.maxZ.toFixed(1)}}σ sostenido).<br>• Componente crítico: <b>${{diag.componenteCritico}}</b>.<br>• Protocolo: Detención inmediata y convocatoria al equipo de mantenimiento electromecánico.`;
+                diagMsg.innerHTML = `Sobreesfuerzo severo en: <b>${{diag.sensorCritico}}</b>.<br>• Componente crítico: <b>${{diag.componenteCritico}}</b>.<br>• Protocolo: Detención inmediata y convocatoria al equipo de mantenimiento electromecánico.`;
             }}
 
+            DailySummary.update(sample, DAYS, calculateRULAndState, selectedDay);
             updateChart();
         }}
 
@@ -987,7 +1179,32 @@ def build():
             el.innerText = text;
         }}
 
-        function selectScenario(scenarioKey) {{
+        function selectScenarioSensor(sensor) {{
+            selectedScenarioSensor = sensor;
+            updateScenarioButtons();
+            if (activeScenarioKey !== 'completa') {{
+                const kind = activeScenarioKey.split('_')[1];
+                const key = `${{sensor}}_${{kind}}`;
+                selectScenario(SCENARIO_METADATA[key].available ? kind : 'completa');
+            }}
+        }}
+
+        function updateScenarioButtons() {{
+            for (const [kind, id, label] of [['normal','btnPreset1','Normal'], ['pico','btnPreset2','Pico transitorio'], ['desgaste','btnPreset3','Desgaste sostenido'], ['critico','btnPreset4','Crítico']]) {{
+                const info = SCENARIO_METADATA[`${{selectedScenarioSensor}}_${{kind}}`];
+                const button = document.getElementById(id);
+                button.disabled = !info.available;
+                button.innerText = info.available ? `${{label}} (80 tomas)` : `${{label}} · Sin ejemplo disponible`;
+                button.title = info.available ? info.criterion : info.reason;
+                button.style.opacity = info.available ? '1' : '0.5';
+            }}
+        }}
+
+        function selectScenario(scenarioKey, keepPlaying = false) {{
+            if (scenarioKey !== 'completa' && !scenarioKey.includes('_')) scenarioKey = `${{selectedScenarioSensor}}_${{scenarioKey}}`;
+            if (scenarioKey !== 'completa' && !SCENARIO_METADATA[scenarioKey].available) return;
+            updateScenarioButtons();
+            if (!keepPlaying && isPlaying) togglePlay();
             activeScenarioKey = scenarioKey;
             const buttons = {{
                 'completa': 'btnPresetCompleta',
@@ -1000,30 +1217,35 @@ def build():
                 const el = document.getElementById(buttons[k]);
                 if (el) el.classList.remove('active');
             }}
-            if (buttons[scenarioKey]) {{
-                const el = document.getElementById(buttons[scenarioKey]);
+            const buttonKind = scenarioKey === 'completa' ? 'completa' : scenarioKey.split('_')[1];
+            if (buttons[buttonKind]) {{
+                const el = document.getElementById(buttons[buttonKind]);
                 if (el) el.classList.add('active');
             }}
 
             const list = getActiveList();
             const slider = document.getElementById('timeSlider');
-            slider.max = list.length - 1;
+            if (scenarioKey !== 'completa') selectedDay = list[0].date;
+            slider.max = Math.max(0, list.length - 1);
+            slider.disabled = !list.length;
+            document.getElementById('playBtn').disabled = !list.length;
+            chartCaches.clear();
+            document.getElementById('dayCalendar').value = scenarioKey === 'completa' ? selectedDay : list[0].date;
+            document.getElementById('daySummary').innerText = list.length ? `${{list.length}} tomas · ${{list[0].hm}} a ${{list[list.length - 1].hm}}` : 'No hay registros para esta fecha';
 
             if (scenarioKey === 'completa') {{
-                document.getElementById('sequenceBadge').innerText = 'SECUENCIA COMPLETA (INICIO A FIN: 212,476 FILAS)';
-                document.getElementById('chartTitle').innerText = '📈 Toda la Secuencia Completa de Tomas (Inicio a Fin: 2026)';
-                document.getElementById('chartSubtitle').innerText = 'Mostrando toda la secuencia cronológica de inicio a fin (desde la primera toma 2026-01-01 hasta la última 2026-12-26).';
-                // En secuencia completa, seleccionar por defecto el modo de trazo total para verla completa de inmediato
-                document.getElementById('drawModeSelect').value = 'full';
+                document.getElementById('sequenceBadge').innerText = `TELEMETRÍA DEL DÍA: ${{selectedDay}}`;
+                document.getElementById('chartTitle').innerText = `📈 Tomas del día · ${{selectedDay}}`;
+                document.getElementById('chartSubtitle').innerText = list.length ? `Lecturas de ${{list[0].hm}} a ${{list[list.length - 1].hm}}. Un paso por minuto registrado; al finalizar, continúa el siguiente día.` : 'Sin lecturas registradas en esta fecha.';
                 slider.value = 0;
                 updateUI(0);
             }} else {{
-                document.getElementById('sequenceBadge').innerText = `ESCENARIO: ${{scenarioKey.toUpperCase()}} (80 TOMAS CONSECUTIVAS)`;
-                document.getElementById('chartTitle').innerText = `📈 Secuencia de Tomas: ${{scenarioKey.toUpperCase()}} (Fila a Fila)`;
-                document.getElementById('chartSubtitle').innerText = 'El eje horizontal incrementa toma por toma (+1 fila generada por el sensor).';
+                const info = SCENARIO_METADATA[scenarioKey];
+                document.getElementById('sequenceBadge').innerText = `${{info.sensor}} · ${{info.kind.toUpperCase()}} (80 TOMAS)`;
+                document.getElementById('chartTitle').innerText = `📈 ${{info.sensor}} · ${{info.kind}} · ${{info.start.slice(0,10)}}`;
+                document.getElementById('chartSubtitle').innerText = 'Cada paso corresponde a una fila original del CSV de test, sin modificar las lecturas.';
                 
-                let startIdx = 0;
-                if (scenarioKey === 'pico') startIdx = 37;
+                let startIdx = info.kind === 'pico' ? info.anchor_index : 0;
                 slider.value = startIdx;
                 updateUI(startIdx);
             }}
@@ -1032,6 +1254,10 @@ def build():
         function stepToma(delta) {{
             const list = getActiveList();
             let next = currentTomaIdx + delta;
+            if (activeScenarioKey === 'completa' && list.length) {{
+                if (next >= list.length && changeDay(1, isPlaying)) return;
+                if (next < 0 && changeDay(-1, isPlaying)) {{ updateUI(getActiveList().length - 1); return; }}
+            }}
             if (next < 0) next = 0;
             if (next >= list.length) next = list.length - 1;
             updateUI(next);
@@ -1053,17 +1279,27 @@ def build():
                 btn.innerText = '⏸ Pausar Reproducción';
                 playInterval = setInterval(() => {{
                     let next = currentTomaIdx + 1;
-                    if (next >= list.length) next = 0;
+                    if (next >= getActiveList().length) {{
+                        if (activeScenarioKey === 'completa' && changeDay(1, true)) return;
+                        togglePlay(); return;
+                    }}
                     updateUI(next);
                 }}, 250);
             }}
         }}
 
         function updateChart() {{
-            const canvas = document.getElementById('trendChart');
+            for (const [sensor, canvasId] of [['vib', 'trendVib'], ['temp', 'trendTemp'], ['pres', 'trendPres'], ['corr', 'trendCorr']]) {{
+                drawSensorChart(sensor, canvasId);
+            }}
+        }}
+
+        function drawSensorChart(sensorKey, canvasId) {{
+            const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            const sensorKey = document.getElementById('sensorChartSelect').value;
+            const theme = getComputedStyle(document.documentElement);
+            const themeColor = name => theme.getPropertyValue(name).trim();
             const drawMode = document.getElementById('drawModeSelect').value; // 'full' o 'progressive'
 
             const rect = canvas.getBoundingClientRect();
@@ -1073,10 +1309,10 @@ def build():
 
             const w = rect.width;
             const h = rect.height;
-            const padLeft = 48;
-            const padRight = 24;
-            const padTop = 24;
-            const padBottom = 44;
+            const padLeft = 64;
+            const padRight = 30;
+            const padTop = 34;
+            const padBottom = 64;
 
             ctx.clearRect(0, 0, w, h);
 
@@ -1088,19 +1324,35 @@ def build():
             const meanKey = sensorKey + '_m';
 
             // Escala Y
-            const allRaw = fullList.map(s => s[rawKey]);
-            const allMean = fullList.map(s => s[meanKey] || s[rawKey]);
-            const allVals = allRaw.concat(allMean);
-
-            let minVal = Math.min(...allVals) * 0.95;
-            let maxVal = Math.max(...allVals) * 1.05;
+            const cacheKey = `${{activeScenarioKey}}:${{selectedDay}}:${{sensorKey}}:${{w}}:${{h}}:${{window.devicePixelRatio}}`;
+            const chartCache = chartCaches.get(sensorKey);
+            let minVal = Infinity;
+            let maxVal = -Infinity;
+            if (chartCache && chartCache.key === cacheKey) {{
+                minVal = chartCache.minVal;
+                maxVal = chartCache.maxVal;
+            }} else {{
+                for (const sample of fullList) {{
+                    const raw = sample[rawKey];
+                    const mean = sample[meanKey] ?? raw;
+                    minVal = Math.min(minVal, raw, mean);
+                    maxVal = Math.max(maxVal, raw, mean);
+                }}
+                minVal *= 0.95;
+                maxVal *= 1.05;
+            }}
             if (maxVal === minVal) {{ maxVal += 1; minVal -= 1; }}
 
             const getX = (i) => padLeft + (i / (totalT - 1)) * (w - padLeft - padRight);
             const getY = (val) => h - padBottom - ((val - minVal) / (maxVal - minVal)) * (h - padTop - padBottom);
 
+            // Reutilizar el trazo del sensor mientras avanza el cursor.
+            if (drawMode === 'full' && chartCache && chartCache.key === cacheKey) {{
+                ctx.drawImage(chartCache.canvas, 0, 0, w, h);
+            }} else {{
+
             // 1. Cuadrícula horizontal y valores Y
-            ctx.strokeStyle = '#1e293b';
+            ctx.strokeStyle = themeColor('--chart-grid');
             ctx.lineWidth = 1;
             for (let step = 0; step <= 4; step++) {{
                 const y = padTop + (step / 4) * (h - padTop - padBottom);
@@ -1110,8 +1362,8 @@ def build():
                 ctx.stroke();
 
                 const v = maxVal - (step / 4) * (maxVal - minVal);
-                ctx.fillStyle = '#64748b';
-                ctx.font = '10.5px sans-serif';
+                ctx.fillStyle = themeColor('--text-muted');
+                ctx.font = '14px sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText(v.toFixed(1), padLeft - 6, y + 4);
             }}
@@ -1119,9 +1371,9 @@ def build():
             // 2. Eje X: Secuencia de Tomas
             
             // Micro-ticks a lo largo del eje
-            const microStep = totalT > 100 ? 5 : 1;
+            const microStep = Math.max(1, Math.ceil(totalT / Math.max(1, Math.floor(w / 5))));
             ctx.beginPath();
-            ctx.strokeStyle = '#334155';
+            ctx.strokeStyle = themeColor('--chart-grid');
             ctx.lineWidth = 1;
             for (let i = 0; i < totalT; i += microStep) {{
                 const x = getX(i);
@@ -1131,13 +1383,13 @@ def build():
             ctx.stroke();
 
             // Intervalo de marcas principales según longitud de la secuencia
-            const stepTomas = totalT > 100 ? Math.floor(totalT / 8) : 10;
+            const stepTomas = Math.max(1, Math.ceil((totalT - 1) / Math.max(1, Math.floor((w - padLeft - padRight) / 130))));
             for (let i = 0; i < totalT; i += stepTomas) {{
                 const x = getX(i);
                 
                 // Línea vertical punteada
                 ctx.beginPath();
-                ctx.strokeStyle = 'rgba(51, 65, 85, 0.4)';
+                ctx.strokeStyle = themeColor('--chart-grid');
                 ctx.setLineDash([3, 3]);
                 ctx.moveTo(x, padTop);
                 ctx.lineTo(x, h - padBottom);
@@ -1146,25 +1398,25 @@ def build():
 
                 // Tick principal
                 ctx.beginPath();
-                ctx.strokeStyle = '#64748b';
+                ctx.strokeStyle = themeColor('--chart-raw');
                 ctx.lineWidth = 1.2;
                 ctx.moveTo(x, h - padBottom);
                 ctx.lineTo(x, h - padBottom + 6);
                 ctx.stroke();
 
                 // Etiqueta de número de toma
-                ctx.fillStyle = '#38bdf8';
-                ctx.font = 'bold 10px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`Toma #${{i + 1}}`, x, h - padBottom + 17);
+                ctx.fillStyle = themeColor('--blue-accent');
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = i === 0 ? 'left' : (i === totalT - 1 ? 'right' : 'center');
+                ctx.fillText(`Toma #${{i + 1}}`, x, h - padBottom + 22);
 
                 // Fecha/hora de la toma
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '9px sans-serif';
+                ctx.fillStyle = themeColor('--text-muted');
+                ctx.font = '14px sans-serif';
                 if (totalT > 100) {{
-                    ctx.fillText(`${{fullList[i].date.slice(5)}} ${{fullList[i].hm}}`, x, h - padBottom + 28);
+                    ctx.fillText(fullList[i].hm, x, h - padBottom + 41);
                 }} else {{
-                    ctx.fillText(fullList[i].hm, x, h - padBottom + 28);
+                    ctx.fillText(fullList[i].hm, x, h - padBottom + 41);
                 }}
             }}
 
@@ -1173,37 +1425,37 @@ def build():
             if (lastIdx % stepTomas !== 0) {{
                 const lx = getX(lastIdx);
                 ctx.beginPath();
-                ctx.strokeStyle = '#64748b';
+                ctx.strokeStyle = themeColor('--chart-raw');
                 ctx.moveTo(lx, h - padBottom);
                 ctx.lineTo(lx, h - padBottom + 6);
                 ctx.stroke();
 
-                ctx.fillStyle = '#38bdf8';
-                ctx.font = 'bold 10px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`Toma #${{lastIdx + 1}}`, lx, h - padBottom + 17);
+                ctx.fillStyle = themeColor('--blue-accent');
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Toma #${{lastIdx + 1}}`, lx, h - padBottom + 22);
 
-                ctx.fillStyle = '#94a3b8';
-                ctx.font = '9px sans-serif';
+                ctx.fillStyle = themeColor('--text-muted');
+                ctx.font = '14px sans-serif';
                 if (totalT > 100) {{
-                    ctx.fillText(`${{fullList[lastIdx].date.slice(5)}} ${{fullList[lastIdx].hm}}`, lx, h - padBottom + 28);
+                    ctx.fillText(fullList[lastIdx].hm, lx, h - padBottom + 41);
                 }} else {{
-                    ctx.fillText(fullList[lastIdx].hm, lx, h - padBottom + 28);
+                    ctx.fillText(fullList[lastIdx].hm, lx, h - padBottom + 41);
                 }}
             }}
 
             // Pie descriptivo del eje
-            ctx.fillStyle = '#64748b';
-            ctx.font = '10px sans-serif';
+            ctx.fillStyle = themeColor('--text-muted');
+            ctx.font = '14px sans-serif';
             ctx.textAlign = 'left';
             if (activeScenarioKey === 'completa') {{
-                ctx.fillText(`🌐 Secuencia Completa: Desde Toma #1 (${{fullList[0].date}} ${{fullList[0].hm}}) hasta Toma #${{totalT}} (${{fullList[lastIdx].date}} ${{fullList[lastIdx].hm}})`, padLeft, h - 4);
+                ctx.fillText(selectedDay, padLeft, h - 4);
             }} else {{
-                ctx.fillText(`📅 ${{fullList[0].date}} | Eje X: 1 paso = 1 fila de sensor (Δt = 1 min)`, padLeft, h - 4);
+                ctx.fillText(fullList[0].date, padLeft, h - 4);
             }}
 
             ctx.textAlign = 'right';
-            ctx.fillText(`Total: ${{totalT}} tomas en secuencia`, w - padRight, h - 4);
+            ctx.fillText(`${{totalT}} tomas`, w - padRight, h - 4);
 
             // Cantidad de puntos a dibujar
             const drawCount = drawMode === 'progressive' ? (currentTomaIdx + 1) : totalT;
@@ -1211,7 +1463,7 @@ def build():
             // 3. Trazo Instantáneo
             if (drawCount > 1) {{
                 ctx.beginPath();
-                ctx.strokeStyle = '#64748b';
+                ctx.strokeStyle = themeColor('--chart-raw');
                 ctx.lineWidth = totalT > 100 ? 1.2 : 1.6;
                 for (let i = 0; i < drawCount; i++) {{
                     const x = getX(i);
@@ -1223,7 +1475,7 @@ def build():
 
                 // 4. Trazo Media Móvil
                 ctx.beginPath();
-                ctx.strokeStyle = '#f59e0b';
+                ctx.strokeStyle = themeColor('--chart-mean');
                 ctx.lineWidth = totalT > 100 ? 2.4 : 2.8;
                 for (let i = 0; i < drawCount; i++) {{
                     const x = getX(i);
@@ -1234,6 +1486,15 @@ def build():
                 ctx.stroke();
             }}
 
+            if (drawMode === 'full') {{
+                const background = document.createElement('canvas');
+                background.width = canvas.width;
+                background.height = canvas.height;
+                background.getContext('2d').drawImage(canvas, 0, 0);
+                chartCaches.set(sensorKey, {{ key: cacheKey, canvas: background, minVal, maxVal }});
+            }}
+            }}
+
             // 5. Cursor y marcador de la toma activa
             if (currentTomaIdx >= 0 && currentTomaIdx < totalT) {{
                 const curX = getX(currentTomaIdx);
@@ -1241,7 +1502,7 @@ def build():
                 const curSample = fullList[currentTomaIdx];
                 const curDiag = calculateRULAndState(curSample);
 
-                const markerColor = curDiag.estado === 'CRITICO' ? '#ef4444' : (curDiag.estado === 'ADVERTENCIA' ? '#f59e0b' : '#38bdf8');
+                const markerColor = curDiag.estado === 'CRITICO' ? '#ef4444' : (curDiag.estado === 'ADVERTENCIA' ? themeColor('--chart-mean') : themeColor('--blue-accent'));
 
                 // Línea vertical punteada
                 ctx.beginPath();
@@ -1269,24 +1530,25 @@ def build():
                 ctx.stroke();
 
                 // Placa indicadora
-                const label = `Toma #${{curSample.toma}} (${{curSample.hm}}): ${{curSample[rawKey].toFixed(2)}}`;
-                ctx.font = 'bold 11px sans-serif';
+                const label = `Toma #${{currentTomaIdx + 1}} (${{curSample.hm}}): ${{curSample[rawKey].toFixed(2)}}`;
+                ctx.font = 'bold 16px sans-serif';
                 const textWidth = ctx.measureText(label).width;
                 const boxX = Math.max(padLeft, Math.min(w - padRight - textWidth - 12, curX - textWidth / 2 - 6));
                 
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-                ctx.fillRect(boxX, padTop + 2, textWidth + 12, 19);
+                ctx.fillStyle = themeColor('--chart-label-bg');
+                ctx.fillRect(boxX, padTop + 2, textWidth + 12, 28);
                 ctx.strokeStyle = markerColor;
                 ctx.lineWidth = 1;
-                ctx.strokeRect(boxX, padTop + 2, textWidth + 12, 19);
+                ctx.strokeRect(boxX, padTop + 2, textWidth + 12, 28);
 
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = themeColor('--chart-label-text');
                 ctx.textAlign = 'left';
-                ctx.fillText(label, boxX + 6, padTop + 16);
+                ctx.fillText(label, boxX + 6, padTop + 22);
             }}
         }}
 
         window.addEventListener('load', () => {{
+            updateThemeButton();
             renderTable();
             selectScenario('completa');
         }});

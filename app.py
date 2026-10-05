@@ -154,7 +154,7 @@ def cargar_telemetria_y_procesar(path_telemetria: str):
     df['dt'] = pd.to_datetime(df['timestamp'])
     df = df.sort_values('dt').reset_index(drop=True)
     
-    sensores = ["temp_motor_c", "presion_hidraulica_bar", "vibracion_rms_mms", "velocidad_cpm", "corriente_motor_a"]
+    sensores = ["temp_motor_c", "presion_hidraulica_bar", "vibracion_rms_mms", "corriente_motor_a"]
     
     for s in sensores:
         df[f"{s}_mean_15"] = df[s].rolling(15, min_periods=1).mean()
@@ -167,7 +167,6 @@ def cargar_telemetria_y_procesar(path_telemetria: str):
         "temp_motor_c": (52.5, 2.0),
         "presion_hidraulica_bar": (214.0, 3.0),
         "vibracion_rms_mms": (1.35, 0.25),
-        "velocidad_cpm": (42.0, 0.8),
         "corriente_motor_a": (21.0, 1.2)
     }
     
@@ -244,7 +243,7 @@ def evaluar_estado_y_causa_raiz(row: pd.Series, pred_rul: float, bundle: dict):
         
     desviaciones = {
         "Temperatura Motor": (temp_m60 - 52.5) / 2.0,
-        "Vibración RMS Rodamientos": (vib_m60 - 1.35) / 0.25,
+        "Vibración RMS del Troquel": (vib_m60 - 1.35) / 0.25,
         "Presión Hidráulica": (214.0 - pres_m60) / 3.0,
         "Corriente Eléctrica": (corr_m60 - 21.0) / 1.2
     }
@@ -491,8 +490,7 @@ def main():
             <b style="color: #f59e0b; font-size: 16px;">⚠️ DIAGNÓSTICO DE CAUSA RAÍZ (DESGASTE SOSTENIDO DETECTADO):</b><br>
             <span style="color: #e2e8f0; font-size: 14px;">
             El subsistema principal que origina la alerta es: <b>{diag['sensor_critico']}</b>.<br>
-            • Desviación sostenida respecto al régimen nominal: <b>+{diag['desviacion_z']:.1f}σ</b> (desviaciones estándar sobre la media).<br>
-            • Recomendación Lean: Programar lubricación preventiva e inspección de rodamientos/sellos para el cambio de turno.
+            • Recomendación Lean: Programar inspección preventiva del subsistema señalado para el cambio de turno.
             </span>
         </div>
         """, unsafe_allow_html=True)
@@ -502,7 +500,6 @@ def main():
             <b style="color: #ef4444; font-size: 16px;">🚨 DIAGNÓSTICO DE CAUSA RAÍZ - FALLA INMINENTE:</b><br>
             <span style="color: #fecaca; font-size: 14px;">
             Sobreesfuerzo severo liderado por: <b>{diag['sensor_critico']}</b> con sobrecalentamiento y desbalance mecánico.<br>
-            • Desviación crítica: <b>+{diag['desviacion_z']:.1f}σ</b> sostenida durante más de 60 minutos continuos.<br>
             • Acción Inmediata: Detención segura del ciclo de troquelado y convocatoria al equipo de mantenimiento electromecánico.
             </span>
         </div>
@@ -743,10 +740,10 @@ def main():
         - **Características de Entrada:** `{len(bundle.get('feature_cols', []))}` variables móviles y de tendencia.
         - **Tope Máximo de RUL (Capping):** `{bundle.get('max_rul_dias', 10.0)} días` (régimen nominal).
         - **Dataset Actual en Pantalla:** `{selected_dataset_label}` ({len(df_tel):,} registros).
-        - **Métricas de Evaluación en Conjunto de Validación (Ciego):**
+        - **Métricas de Evaluación en el Último 20 % de 2025:**
           * **MAE Global:** `{bundle['metricas'].get('mae_global', 0.0):.3f} días`
           * **RMSE Global:** `{bundle['metricas'].get('rmse_global', 0.0):.3f} días`
-          * **MAE en Fase Crítica (RUL ≤ 3 días):** `{bundle['metricas'].get('mae_critico', 0.0):.3f} días` *(menos de 30 minutos de error operativo)*
+          * **MAE en Fase Crítica (RUL ≤ 3 días):** `{bundle['metricas'].get('mae_critico', 0.0):.3f} días` ({bundle['metricas'].get('mae_critico', 0.0) * 600:.1f} minutos operativos)
           * **Coeficiente R²:** `{bundle['metricas'].get('r2_global', 0.0):.4f}`
         """)
 

@@ -1,0 +1,58 @@
+{
+  "modelo": "XGBRegressor",
+  "sha256_modelo": "30fa40ca41f6c910dc3f9e1557d79d4e081296a3b6be34936541a4107ee6fb12",
+  "entrenamiento_guardado": "2026-10-03 17:35:35",
+  "validacion_inicio": "2025-10-16 08:00:00",
+  "validacion_fin": "2025-12-26 17:59:00",
+  "filas_validacion": 43200,
+  "filas_rul_conocido_menor_10": 17400,
+  "filas_objetivo_limitado_10": 10800,
+  "filas_sin_siguiente_falla": 15000,
+  "fallas_con_referencia_exacta": 4,
+  "predicciones_recortadas": 13,
+  "mae_global_reproducido_dias": 1.1300395018142522,
+  "cercanas_hasta_3_dias": {
+    "filas": 7203,
+    "fallas_referencia": 4,
+    "mae_dias": 0.04825902566922644,
+    "mae_horas_operativas": 0.4825902566922644,
+    "mae_minutos_operativos": 28.955415401535866,
+    "rmse_horas_operativas": 0.8108154731630886,
+    "sesgo_horas_operativas": 0.36664598303487955,
+    "p90_error_horas_operativas": 0.8638031387329097,
+    "dentro_1_hora_pct": 92.60030542829377,
+    "dentro_1_dia_pct": 99.97223379147577
+  },
+  "alejadas_mas_3_menos_10_dias": {
+    "filas": 10197,
+    "fallas_referencia": 3,
+    "mae_dias": 1.3716706910768866,
+    "mae_horas_operativas": 13.716706910768865,
+    "mae_minutos_operativos": 823.0024146461319,
+    "rmse_horas_operativas": 19.028409946741633,
+    "sesgo_horas_operativas": 11.003236756601133,
+    "p90_error_horas_operativas": 34.543861058553055,
+    "dentro_1_hora_pct": 24.58566244974012,
+    "dentro_1_dia_pct": 50.89732274198293
+  },
+  "mae_monotono_creciente_al_alejarse": false,
+  "descensos_al_alejarse": [
+    {
+      "desde": "0 a 1",
+      "hasta": ">1 a 2"
+    },
+    {
+      "desde": ">5 a 6",
+      "hasta": ">6 a 7"
+    },
+    {
+      "desde": ">6 a 7",
+      "hasta": ">7 a 8"
+    },
+    {
+      "desde": ">7 a 8",
+      "hasta": ">8 a 9"
+    }
+  ],
+  "metodo": "Mismo modelo guardado, primer 80% cronologico para entrenamiento y ultimo 20% de 2025 para validacion. Predicciones recortadas 0-10 como train_model.py. Intervalos basados en RUL de referencia, no predicho. Solo RUL conocido <10 en la comparacion principal. RUL=distancia en filas/600; dia operativo=10h. Las filas en el instante de falla se incluyen con RUL=0. No se reentrena."
+}
