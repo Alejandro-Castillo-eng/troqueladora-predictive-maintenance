@@ -722,7 +722,7 @@ def build():
             .header-meta {{ text-align: center; }}
         }}
     </style>
-    <link rel="stylesheet" href="daily_summary.css">
+    <link rel="stylesheet" href="daily_summary.css?v=compact-2">
 </head>
 <body>
     <div class="dashboard-layout">
@@ -731,11 +731,9 @@ def build():
         <header class="andon-header">
             <div class="header-title-box">
                 <h1>⚙️ TABLERO ANDON 4.0 · PRENSA TROQUELADORA</h1>
-                <p>Monitoreo Continuo por Cada Toma de Datos (Fila a Fila) & Estimación de RUL</p>
             </div>
             <div class="header-meta">
                 <span class="shift-badge" id="sequenceBadge">SECUENCIA COMPLETA (INICIO A FIN)</span>
-                <div style="color: #b6c2d3;">Estampa de la Toma: <b id="clockDisplay">2026-01-01 08:00:00</b></div>
                 <button type="button" class="btn-action" id="themeToggle" onclick="toggleTheme()" aria-pressed="false">☀️ Modo claro</button>
             </div>
         </header>
@@ -743,15 +741,12 @@ def build():
         <!-- SEMÁFORO DE ESTADO ANDON -->
         <div id="statusBanner" class="status-banner normal">
             <div class="status-title" id="statusTitle">🟢 ESTADO: OPERACIÓN NORMAL</div>
-            <div class="status-desc" id="statusDesc">Todos los sensores se encuentran operando dentro de la tolerancia nominal. Régimen estable.</div>
         </div>
 
         <!-- MÉTRICA GIGANTE RUL + SALUD -->
         <div class="top-metrics-grid">
             <div class="card rul-card">
-                <div class="card-label">Vida Útil Remanente Estimada (RUL)</div>
                 <div class="rul-val normal" id="rulValue">> 10.0 DÍAS / ÓPTIMO</div>
-                <div class="rul-sub" id="rulSubtext">Operación estable. No se proyecta parada no programada a corto plazo.</div>
             </div>
 
             <div class="card health-card">
@@ -764,14 +759,6 @@ def build():
             </div>
         </div>
 
-        <!-- DIAGNÓSTICO DE CAUSA RAÍZ -->
-        <div id="diagnosisBox" class="diagnosis-box">
-            <b style="color: var(--green-main); font-size: 18px;" id="diagTitle">✓ DIAGNÓSTICO DE CONDICIÓN:</b><br>
-            <span id="diagMessage" style="color: #cbd5e1;">
-                Todos los subsistemas mecánicos, hidráulicos y eléctricos reportan valores nominales. El desgaste acumulado es mínimo.
-            </span>
-        </div>
-
         <!-- 4 TARJETAS KPI DE SENSORES -->
         <div class="sensors-grid">
             <!-- 1. Temperatura -->
@@ -780,10 +767,6 @@ def build():
                     <div class="sensor-title">🌡️ Temperatura Motor</div>
                     <div class="sensor-reading"><span id="valTemp">52.4</span> <span class="sensor-unit">°C</span></div>
                     <span class="badge normal" id="badgeTemp">NOMINAL</span>
-                </div>
-                <div class="sensor-sub">
-                    Media 60 min: <b id="meanTemp">52.2 °C</b><br>
-                    Nominal: 50.0 - 55.0 °C
                 </div>
             </div>
 
@@ -794,10 +777,6 @@ def build():
                     <div class="sensor-reading"><span id="valPres">214.8</span> <span class="sensor-unit">bar</span></div>
                     <span class="badge normal" id="badgePres">NOMINAL</span>
                 </div>
-                <div class="sensor-sub">
-                    Media 60 min: <b id="meanPres">214.5 bar</b><br>
-                    Nominal: 210 - 220 bar
-                </div>
             </div>
 
             <!-- 3. Vibración RMS -->
@@ -807,10 +786,6 @@ def build():
                     <div class="sensor-reading"><span id="valVib">1.32</span> <span class="sensor-unit">mm/s</span></div>
                     <span class="badge normal" id="badgeVib">NOMINAL</span>
                 </div>
-                <div class="sensor-sub">
-                    Media 60 min: <b id="meanVib">1.34 mm/s</b><br>
-                    Nominal: 1.0 - 1.6 mm/s
-                </div>
             </div>
 
             <!-- 4. Corriente Motor -->
@@ -819,10 +794,6 @@ def build():
                     <div class="sensor-title">⚡ Corriente Motor</div>
                     <div class="sensor-reading"><span id="valCorr">20.9</span> <span class="sensor-unit">A</span></div>
                     <span class="badge normal" id="badgeCorr">NOMINAL</span>
-                </div>
-                <div class="sensor-sub">
-                    Media 60 min: <b id="meanCorr">21.1 A</b><br>
-                    Nominal: 20.0 - 22.5 A
                 </div>
             </div>
         </div>
@@ -911,16 +882,9 @@ def build():
         </div>
 
     </div>
-    <aside class="daily-summary-panel" aria-labelledby="dailySummaryTitle">
-        <h2 id="dailySummaryTitle">📋 Resumen del día</h2>
-        <p id="dailySummaryProgress" class="daily-summary-progress">Resumen pendiente</p>
-        <p id="dailySummaryPending" class="daily-summary-muted">El resumen se genera al llegar a la última toma registrada del día.</p>
-        <div id="dailySummaryContent" aria-live="polite" hidden></div>
-    </aside>
     </div>
 
     <!-- SCRIPT DE INTELIGENCIA PREDICTIVA Y DINÁMICA -->
-    <script src="daily_summary.js"></script>
     <script>
         const SCENARIOS = {scenarios_json};
         const FALLAS = {fallas_json};
@@ -1047,20 +1011,14 @@ def build():
             const list = getActiveList();
             if (!list.length) {{
                 currentTomaIdx = 0;
-                for (const id of ['valTemp', 'valPres', 'valVib', 'valCorr', 'meanTemp', 'meanPres', 'meanVib', 'meanCorr', 'rulValue', 'healthValue']) {{
+                for (const id of ['valTemp', 'valPres', 'valVib', 'valCorr', 'rulValue', 'healthValue']) {{
                     document.getElementById(id).innerText = '—';
                 }}
                 for (const id of ['badgeTemp', 'badgePres', 'badgeVib', 'badgeCorr']) setBadge(id, 'normal', 'SIN DATOS');
                 document.getElementById('healthBarFill').style.width = '0%';
                 document.getElementById('healthDesc').innerText = 'Sin datos';
-                document.getElementById('clockDisplay').innerText = selectedDay;
                 document.getElementById('sliderTimeText').innerText = 'Sin tomas para esta fecha';
                 document.getElementById('statusTitle').innerText = 'SIN LECTURAS REGISTRADAS';
-                document.getElementById('statusDesc').innerText = 'Selecciona otro día en el calendario.';
-                document.getElementById('rulSubtext').innerText = 'Sin predicción para esta fecha.';
-                document.getElementById('diagTitle').innerText = 'SIN DATOS';
-                document.getElementById('diagMessage').innerText = 'No hay lecturas registradas para evaluar este día.';
-                DailySummary.update(null, DAYS, calculateRULAndState, selectedDay);
                 updateChart();
                 return;
             }}
@@ -1070,21 +1028,16 @@ def build():
             const sample = list[idx];
             const diag = calculateRULAndState(sample);
 
-            document.getElementById('clockDisplay').innerText = sample.t;
             document.getElementById('sliderTimeText').innerText = `Toma #${{idx + 1}} de ${{list.length}} · ${{sample.t}}`;
             document.getElementById('timeSlider').value = idx;
 
             document.getElementById('valTemp').innerText = sample.temp.toFixed(1);
-            document.getElementById('meanTemp').innerText = sample.temp_m.toFixed(1) + ' °C';
 
             document.getElementById('valPres').innerText = sample.pres.toFixed(1);
-            document.getElementById('meanPres').innerText = sample.pres_m.toFixed(1) + ' bar';
 
             document.getElementById('valVib').innerText = sample.vib.toFixed(2);
-            document.getElementById('meanVib').innerText = sample.vib_m.toFixed(2) + ' mm/s';
 
             document.getElementById('valCorr').innerText = sample.corr.toFixed(1);
-            document.getElementById('meanCorr').innerText = sample.corr_m.toFixed(1) + ' A';
 
             setBadge('badgeTemp', sample.temp_m < 58 ? 'normal' : (sample.temp_m < 68 ? 'warning' : 'critical'), sample.temp_m < 58 ? 'NOMINAL' : (sample.temp_m < 68 ? 'ELEVADA' : 'CRÍTICA'));
             setBadge('badgePres', sample.pres_m > 204 ? 'normal' : (sample.pres_m > 185 ? 'warning' : 'critical'), sample.pres_m > 204 ? 'NOMINAL' : (sample.pres_m > 185 ? 'BAJA' : 'CRÍTICA'));
@@ -1093,12 +1046,7 @@ def build():
 
             const banner = document.getElementById('statusBanner');
             const title = document.getElementById('statusTitle');
-            const desc = document.getElementById('statusDesc');
             const rulVal = document.getElementById('rulValue');
-            const rulSub = document.getElementById('rulSubtext');
-            const diagBox = document.getElementById('diagnosisBox');
-            const diagTitle = document.getElementById('diagTitle');
-            const diagMsg = document.getElementById('diagMessage');
 
             const health = Math.max(5, Math.min(100, 100 - (diag.estres * 8.5)));
             document.getElementById('healthValue').innerText = health.toFixed(1) + '%';
@@ -1107,60 +1055,35 @@ def build():
             if (diag.estado === 'NORMAL') {{
                 banner.className = 'status-banner normal';
                 title.innerText = '🟢 ESTADO: OPERACIÓN NORMAL';
-                desc.innerText = 'Todos los sensores operan dentro del régimen nominal. Equipo estable.';
                 rulVal.className = 'rul-val normal';
                 rulVal.innerText = `RUL DEL MODELO: ${{sample.rul.toFixed(2)}} DÍAS`;
-                rulSub.innerText = 'Operación estable. No se proyecta parada no programada a corto plazo.';
 
                 document.getElementById('healthValue').style.color = 'var(--green-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--green-main)';
                 document.getElementById('healthDesc').innerHTML = 'Condición: <b>Excelente</b>';
 
-                diagBox.className = 'diagnosis-box';
-                if (diag.esPicoAislado) {{
-                    diagTitle.style.color = 'var(--green-main)';
-                    diagTitle.innerText = '🛡️ FILTRO DE RUIDO TRANSITORIO ACTIVO (PICO AISLADO EN ESTA FILA):';
-                    diagMsg.innerHTML = `En esta toma de datos (<b>Toma #${{sample.toma}}</b>) se registró un pico transitorio aislado de vibración (<b>${{sample.vib.toFixed(2)}} mm/s</b>), pero la <b>media móvil a 60 min permanece normal (${{sample.vib_m.toFixed(2)}} mm/s)</b>. El sistema descarta la fluctuación como ruido transitorio y previene una falsa alarma.`;
-                }} else {{
-                    diagTitle.style.color = 'var(--green-main)';
-                    diagTitle.innerText = '✓ DIAGNÓSTICO DE CONDICIÓN:';
-                    diagMsg.innerText = 'Todos los subsistemas mecánicos, hidráulicos y eléctricos operan dentro de especificaciones nominales. Desgaste acumulado mínimo.';
-                }}
             }} else if (diag.estado === 'ADVERTENCIA') {{
                 banner.className = 'status-banner warning';
                 title.innerText = '🟡 DEGRADACIÓN DETECTADA (ALERTA PREVENTIVA)';
-                desc.innerText = 'Tendencia sostenida de desgaste termomecánico detectada en las últimas tomas de datos. Planificar inspección.';
                 rulVal.className = 'rul-val warning';
                 rulVal.innerText = `FALTAN ${{diag.rulDias.toFixed(1)}} DÍAS PARA LA FALLA`;
-                rulSub.innerText = `Equivalente a aproximadamente ${{(diag.rulDias * 10).toFixed(1)}} horas operativas restantes antes de parada.`;
 
                 document.getElementById('healthValue').style.color = 'var(--yellow-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--yellow-main)';
                 document.getElementById('healthDesc').innerHTML = 'Condición: <b>Degradación Sostenida</b>';
 
-                diagBox.className = 'diagnosis-box warning';
-                diagTitle.style.color = 'var(--yellow-main)';
-                diagTitle.innerText = '⚠️ DIAGNÓSTICO DE CAUSA RAÍZ (DESGASTE DETECTADO):';
-                diagMsg.innerHTML = `Disparo liderado por: <b>${{diag.sensorCritico}}</b>.<br>• Componente bajo estrés: <b>${{diag.componenteCritico}}</b>.<br>• Acción recomendada: Inspección y lubricación preventiva en el cambio de turno.`;
             }} else {{
                 banner.className = 'status-banner critical';
                 title.innerText = '🔴 PARADA CRÍTICA INMINENTE';
-                desc.innerText = '¡PELIGRO DE AVERÍA SEVERA! Umbral crítico superado en la lectura actual. Intervención correctiva inmediata.';
                 rulVal.className = 'rul-val critical';
                 rulVal.innerText = `🚨 FALTAN ${{diag.rulDias.toFixed(2)}} DÍAS (${{(diag.rulDias * 10).toFixed(1)}} HORAS)`;
-                rulSub.innerText = 'Desgaste acelerado crítico. Detener troqueladora de forma segura al terminar el ciclo actual.';
 
                 document.getElementById('healthValue').style.color = 'var(--red-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--red-main)';
                 document.getElementById('healthDesc').innerHTML = 'Condición: <b>Peligro Crítico</b>';
 
-                diagBox.className = 'diagnosis-box critical';
-                diagTitle.style.color = 'var(--red-main)';
-                diagTitle.innerText = '🚨 DIAGNÓSTICO DE CAUSA RAÍZ - FALLA INMINENTE:';
-                diagMsg.innerHTML = `Sobreesfuerzo severo en: <b>${{diag.sensorCritico}}</b>.<br>• Componente crítico: <b>${{diag.componenteCritico}}</b>.<br>• Protocolo: Detención inmediata y convocatoria al equipo de mantenimiento electromecánico.`;
             }}
 
-            DailySummary.update(sample, DAYS, calculateRULAndState, selectedDay);
             updateChart();
         }}
 
