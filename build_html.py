@@ -366,6 +366,21 @@ def build():
         #dayCharts > summary[hidden], .chart-controls[hidden], .timeline-box[hidden], #dailyAverageLabel[hidden] {{ display: none; }}
         #dailyAverageLabel {{ font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; }}
 
+        .day-chart-toolbar {{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            padding: 18px 22px;
+            margin-bottom: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }}
+        .day-chart-toolbar h3 {{ font-size: 24px; }}
+        #dayPlayBtn {{ font-size: 20px; padding: 12px 18px; }}
+
         /* Semáforo de Planta Andon */
         .status-banner {{
             border-radius: 12px;
@@ -945,14 +960,15 @@ def build():
             </div>
         </details>
 
+        <div class="day-chart-toolbar">
+            <h3 id="chartTitle">📈 Tomas del día</h3>
+            <button type="button" class="btn-play" id="dayPlayBtn" onclick="toggleDayPlayback()" aria-pressed="false">▶ Reproducir tomas</button>
+        </div>
         <details id="dayCharts" open>
         <summary id="historicalChartToggle" hidden>📈 Ver gráficas completas del día</summary>
         <!-- GRÁFICA DE TENDENCIAS EN TIEMPO REAL -->
         <div class="chart-card">
             <div class="chart-header">
-                <div>
-                    <h3 style="font-size: 20px;" id="chartTitle">📈 Tomas del día</h3>
-                </div>
                 <div class="chart-controls">
                     <select id="drawModeSelect" class="chart-select" onchange="updateChart()">
                         <option value="progressive" selected>📈 Tomas del día (Adquisición Progresiva)</option>
@@ -1010,7 +1026,6 @@ def build():
         const availableDays = Array.from(DAYS.keys()).sort();
         const initialDay = availableDays.find(date => date.startsWith('2026-04-')) || availableDays[0];
         let selectedDay = initialDay;
-        let playbackDay = initialDay;
         let isHistoricalView = false;
 
         let activeScenarioKey = 'completa';
@@ -1103,11 +1118,10 @@ def build():
 
         function selectDay(date, keepPlaying = false) {{
             if (!date) return;
-            const historical = !keepPlaying && date < playbackDay;
+            const historical = !keepPlaying && (date < selectedDay || (date === selectedDay && isHistoricalView));
             if (!keepPlaying && isPlaying) togglePlay();
             selectedDay = date;
             isHistoricalView = historical;
-            if (!historical) playbackDay = date;
             activeScenarioKey = 'completa';
             selectScenario('completa', keepPlaying);
             if (!historical && !isPlaying && getActiveList().length) togglePlay();
@@ -1122,6 +1136,24 @@ def build():
             return sample;
         }}
 
+        function syncDayPlaybackButton() {{
+            const button = document.getElementById('dayPlayBtn');
+            button.disabled = !getActiveList().length;
+            button.textContent = isPlaying ? '⏸ Pausar tomas' : '▶ Reproducir tomas';
+            button.setAttribute('aria-pressed', String(isPlaying));
+        }}
+
+        function toggleDayPlayback() {{
+            if (!getActiveList().length) return;
+            if (isHistoricalView) {{
+                isHistoricalView = false;
+                selectScenario('completa');
+            }} else if (!isPlaying && currentTomaIdx >= getActiveList().length - 1) {{
+                updateUI(0);
+            }}
+            togglePlay();
+        }}
+
         function configureDayView() {{
             const charts = document.getElementById('dayCharts');
             charts.open = !isHistoricalView;
@@ -1134,6 +1166,7 @@ def build():
             label.hidden = !isHistoricalView;
             label.textContent = `Promedios del ${{selectedDay.split('-').reverse().join('/')}} · ${{getActiveList().length}} lecturas`;
             document.getElementById('healthLabel').textContent = isHistoricalView ? 'Salud promedio del día' : 'Índice de Salud de Máquina';
+            syncDayPlaybackButton();
         }}
 
         function changeDay(delta, keepPlaying = false) {{
@@ -1396,6 +1429,7 @@ def build():
             if (isHistoricalView) return;
             const btn = document.getElementById('playBtn');
             const list = getActiveList();
+            if (!list.length) return;
             if (isPlaying) {{
                 clearInterval(playInterval);
                 isPlaying = false;
@@ -1412,6 +1446,7 @@ def build():
                     updateUI(next);
                 }}, 1000);
             }}
+            syncDayPlaybackButton();
         }}
 
         function updateChart() {{
