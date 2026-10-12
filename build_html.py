@@ -858,9 +858,6 @@ def build():
             <div class="chart-header">
                 <div>
                     <h3 style="font-size: 20px;" id="chartTitle">📈 Tomas del día</h3>
-                    <p style="font-size: 16px; color: var(--text-muted);" id="chartSubtitle">
-                        Elige una fecha para ver sus lecturas minuto a minuto.
-                    </p>
                 </div>
                 <div class="chart-controls">
                     <select id="drawModeSelect" class="chart-select" onchange="updateChart()">
@@ -1170,14 +1167,12 @@ def build():
             if (scenarioKey === 'completa') {{
                 document.getElementById('sequenceBadge').innerText = `TELEMETRÍA DEL DÍA: ${{selectedDay}}`;
                 document.getElementById('chartTitle').innerText = `📈 Tomas del día · ${{selectedDay}}`;
-                document.getElementById('chartSubtitle').innerText = list.length ? `Lecturas de ${{list[0].hm}} a ${{list[list.length - 1].hm}}. Un paso por minuto registrado; al finalizar, continúa el siguiente día.` : 'Sin lecturas registradas en esta fecha.';
                 slider.value = 0;
                 updateUI(0);
             }} else {{
                 const info = SCENARIO_METADATA[scenarioKey];
                 document.getElementById('sequenceBadge').innerText = `${{info.sensor}} · ${{info.kind.toUpperCase()}} (80 TOMAS)`;
                 document.getElementById('chartTitle').innerText = `📈 ${{info.sensor}} · ${{info.kind}} · ${{info.start.slice(0,10)}}`;
-                document.getElementById('chartSubtitle').innerText = 'Cada paso corresponde a una fila original del CSV de test, sin modificar las lecturas.';
                 
                 let startIdx = info.kind === 'pico' ? info.anchor_index : 0;
                 slider.value = startIdx;
