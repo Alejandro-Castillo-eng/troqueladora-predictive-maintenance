@@ -923,43 +923,6 @@ def build():
             </div>
         </div>
 
-        <!-- PANEL DE SIMULACIÓN Y PRESETS -->
-        <details class="control-panel" id="telemetryControls">
-            <summary>🎮 Centro de Telemetría: Secuencia de Tomas de Datos (Fila a Fila)</summary>
-            <div class="control-panel-content">
-
-            <div class="timeline-box" style="margin-bottom: 12px;">
-                <label for="scenarioSensor">Escenarios del sensor:</label>
-                <select id="scenarioSensor" class="chart-select" onchange="selectScenarioSensor(this.value)">
-                    <option value="vib">Vibración RMS</option><option value="temp">Temperatura Motor</option>
-                    <option value="pres">Presión Hidráulica</option><option value="corr">Corriente Motor</option>
-                </select>
-            </div>
-            <div class="presets-row">
-                <button class="btn-preset active" id="btnPresetCompleta" onclick="selectScenario('completa')">📅 Telemetría por Día</button>
-                <button class="btn-preset" id="btnPreset1" onclick="selectScenario('normal')">🟢 1. Secuencia Normal (80 Tomas)</button>
-                <button class="btn-preset" id="btnPreset2" onclick="selectScenario('pico')">⚡ 2. Secuencia Pico Transitorio (80 Tomas)</button>
-                <button class="btn-preset" id="btnPreset3" onclick="selectScenario('desgaste')">🟡 3. Secuencia Desgaste Sostenido (80 Tomas)</button>
-                <button class="btn-preset" id="btnPreset4" onclick="selectScenario('critico')">🔴 4. Secuencia Falla Inminente (80 Tomas)</button>
-            </div>
-
-            <div class="timeline-box" style="margin-bottom: 12px;">
-                <label for="dayCalendar">Fecha de telemetría:</label>
-                <input type="date" id="dayCalendar" class="chart-select" min="{scenarios['completa'][0]['date']}" max="{scenarios['completa'][-1]['date']}" value="{scenarios['completa'][0]['date']}" onchange="selectDay(this.value)">
-                <button class="btn-action" onclick="changeDay(-1)">◀ Día anterior</button>
-                <button class="btn-action" onclick="changeDay(1)">Día siguiente ▶</button>
-                <span id="daySummary" style="color: var(--text-muted);"></span>
-            </div>
-            <div class="timeline-box">
-                <button class="btn-play" id="playBtn" onclick="togglePlay()">▶ Iniciar Reproducción (Toma a Toma)</button>
-                <button class="btn-action" onclick="stepToma(-1)">⏮ -1 Toma</button>
-                <button class="btn-action" onclick="stepToma(1)">⏭ +1 Toma (Nueva Fila)</button>
-                <input type="range" id="timeSlider" class="timeline-slider" min="0" max="{len(scenarios['completa']) - 1}" step="1" value="0" oninput="onSliderChange(this.value)">
-                <span id="sliderTimeText" style="font-size: 16px; font-weight: 700; min-width: 270px; text-align: right; color: var(--blue-accent);">Toma #1 de {len(scenarios['completa'])} · {scenarios['completa'][0]['t']}</span>
-            </div>
-            </div>
-        </details>
-
         <div class="day-chart-toolbar">
             <h3 id="chartTitle">📈 Tomas del día</h3>
             <button type="button" class="btn-play" id="dayPlayBtn" onclick="toggleDayPlayback()" aria-pressed="false">▶ Reproducir tomas</button>
@@ -1008,6 +971,43 @@ def build():
                 </table>
             </div>
         </div>
+
+        <!-- PANEL DE SIMULACIÓN Y PRESETS -->
+        <details class="control-panel" id="telemetryControls">
+            <summary>🎮 Centro de Telemetría: Secuencia de Tomas de Datos (Fila a Fila)</summary>
+            <div class="control-panel-content">
+
+            <div class="timeline-box" style="margin-bottom: 12px;">
+                <label for="scenarioSensor">Escenarios del sensor:</label>
+                <select id="scenarioSensor" class="chart-select" onchange="selectScenarioSensor(this.value)">
+                    <option value="vib">Vibración RMS</option><option value="temp">Temperatura Motor</option>
+                    <option value="pres">Presión Hidráulica</option><option value="corr">Corriente Motor</option>
+                </select>
+            </div>
+            <div class="presets-row">
+                <button class="btn-preset active" id="btnPresetCompleta" onclick="selectScenario('completa')">📅 Telemetría por Día</button>
+                <button class="btn-preset" id="btnPreset1" onclick="selectScenario('normal')">🟢 1. Secuencia Normal (80 Tomas)</button>
+                <button class="btn-preset" id="btnPreset2" onclick="selectScenario('pico')">⚡ 2. Secuencia Pico Transitorio (80 Tomas)</button>
+                <button class="btn-preset" id="btnPreset3" onclick="selectScenario('desgaste')">🟡 3. Secuencia Desgaste Sostenido (80 Tomas)</button>
+                <button class="btn-preset" id="btnPreset4" onclick="selectScenario('critico')">🔴 4. Secuencia Falla Inminente (80 Tomas)</button>
+            </div>
+
+            <div class="timeline-box" style="margin-bottom: 12px;">
+                <label for="dayCalendar">Fecha de telemetría:</label>
+                <input type="date" id="dayCalendar" class="chart-select" min="{scenarios['completa'][0]['date']}" max="{scenarios['completa'][-1]['date']}" value="{scenarios['completa'][0]['date']}" onchange="selectDay(this.value)">
+                <button class="btn-action" onclick="changeDay(-1)">◀ Día anterior</button>
+                <button class="btn-action" onclick="changeDay(1)">Día siguiente ▶</button>
+                <span id="daySummary" style="color: var(--text-muted);"></span>
+            </div>
+            <div class="timeline-box">
+                <button class="btn-play" id="playBtn" onclick="togglePlay()">▶ Iniciar Reproducción (Toma a Toma)</button>
+                <button class="btn-action" onclick="stepToma(-1)">⏮ -1 Toma</button>
+                <button class="btn-action" onclick="stepToma(1)">⏭ +1 Toma (Nueva Fila)</button>
+                <input type="range" id="timeSlider" class="timeline-slider" min="0" max="{len(scenarios['completa']) - 1}" step="1" value="0" oninput="onSliderChange(this.value)">
+                <span id="sliderTimeText" style="font-size: 16px; font-weight: 700; min-width: 270px; text-align: right; color: var(--blue-accent);">Toma #1 de {len(scenarios['completa'])} · {scenarios['completa'][0]['t']}</span>
+            </div>
+            </div>
+        </details>
 
     </div>
     </div>
