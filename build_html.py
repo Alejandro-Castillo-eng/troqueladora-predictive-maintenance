@@ -884,11 +884,6 @@ def build():
                 <section class="sensor-chart"><h4>Presión Hidráulica (bar)</h4><canvas id="trendPres" class="sensor-trend" aria-label="Evolución de presión hidráulica"></canvas></section>
                 <section class="sensor-chart"><h4>Corriente Motor (A)</h4><canvas id="trendCorr" class="sensor-trend" aria-label="Evolución de corriente del motor"></canvas></section>
             </div>
-            <div style="display: flex; gap: 20px; font-size: 16px; margin-top: 10px; justify-content: flex-end; flex-wrap: wrap;">
-                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 2px; background: var(--chart-raw);"></span> Lectura Instantánea (con ruido en cada toma)</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 14px; height: 3px; background: var(--chart-mean);"></span> Media Móvil 60 min (Filtro de Desgaste)</span>
-                <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: #38bdf8; border: 2px solid #ffffff;"></span> Toma / Fila Actual</span>
-            </div>
         </div>
 
         <!-- BITÁCORA HISTÓRICA DE PARADAS -->
@@ -915,10 +910,6 @@ def build():
             </div>
         </div>
 
-        <!-- FOOTER -->
-        <footer>
-            Tablero de Mantenimiento Predictivo Andon · Prensa Troqueladora 500T · Secuencia Completa de Telemetría (Inicio a Fin)
-        </footer>
     </div>
     <aside class="daily-summary-panel" aria-labelledby="dailySummaryTitle">
         <h2 id="dailySummaryTitle">📋 Resumen del día</h2>

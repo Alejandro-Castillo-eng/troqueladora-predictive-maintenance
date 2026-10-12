@@ -1,6 +1,16 @@
+/* Oculta las zonas señaladas y conserva las métricas y controles. */
+.header-title-box > p,
+.header-meta > div,
+.rul-sub,
+.diagnosis-box,
+.sensor-sub,
+.daily-summary-panel {
+    display: none;
+}
+
 .dashboard-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr);
     gap: 20px;
     max-width: 1780px;
     margin: 0 auto;
