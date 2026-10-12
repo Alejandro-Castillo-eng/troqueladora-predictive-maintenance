@@ -381,6 +381,36 @@ def build():
         .day-chart-toolbar h3 {{ font-size: 24px; }}
         #dayPlayBtn {{ font-size: 20px; padding: 12px 18px; }}
 
+        #dashboard[hidden], #loginScreen[hidden], #loginError[hidden] {{ display: none; }}
+        .login-screen {{ min-height: calc(100svh - 40px); display: grid; place-items: center; }}
+        .login-layout {{ width: min(960px, 100%); display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: stretch; }}
+        .login-card, .login-credentials {{ padding: 40px; border: 1px solid var(--border-color); border-radius: 20px; background: var(--bg-card); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); }}
+        .login-brand {{ font-size: 18px; font-weight: 800; color: var(--blue-accent); margin-bottom: 22px; }}
+        .login-card h1 {{ font-size: 38px; line-height: 1.2; margin-bottom: 12px; }}
+        .login-intro {{ font-size: 20px; color: var(--text-muted); margin-bottom: 30px; }}
+        #loginForm {{ display: flex; flex-direction: column; gap: 12px; }}
+        #loginForm label {{ font-size: 20px; font-weight: 700; }}
+        #loginForm input {{ width: 100%; min-width: 0; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-main); color: var(--text-main); font: inherit; font-size: 20px; margin-bottom: 10px; }}
+        #loginForm input::placeholder {{ color: var(--text-muted); }}
+        #loginForm input:focus-visible, .login-submit:focus-visible {{ outline: 3px solid var(--blue-accent); outline-offset: 3px; }}
+        .login-submit {{ padding: 16px; border: 0; border-radius: 10px; background: var(--blue-accent); color: var(--preset-active-text); cursor: pointer; font: inherit; font-size: 22px; font-weight: 800; }}
+        .login-submit:hover {{ filter: brightness(1.1); }}
+        .login-error {{ font-size: 18px; color: var(--red-main); font-weight: 700; }}
+        .login-credentials {{ border: 2px solid var(--blue-accent); background: var(--bg-card-sub); display: flex; flex-direction: column; justify-content: center; }}
+        .credentials-icon {{ font-size: 44px; margin-bottom: 14px; }}
+        .login-credentials h2 {{ font-size: 28px; line-height: 1.3; margin-bottom: 12px; }}
+        .login-credentials p {{ font-size: 20px; color: var(--text-muted); }}
+        .login-credentials dl {{ margin: 26px 0; }}
+        .login-credentials dt {{ font-size: 18px; font-weight: 700; margin-bottom: 8px; }}
+        .login-credentials dd {{ margin: 0 0 20px; padding: 12px 16px; border-radius: 10px; background: var(--bg-card); }}
+        .login-credentials code {{ font-size: 26px; font-weight: 800; color: var(--blue-accent); overflow-wrap: anywhere; }}
+        .login-credentials .login-demo {{ font-size: 18px; font-weight: 700; color: var(--blue-accent); }}
+        @media (max-width: 700px) {{
+            .login-layout {{ grid-template-columns: 1fr; }}
+            .login-card, .login-credentials {{ padding: 26px; }}
+            .login-card h1 {{ font-size: 32px; }}
+        }}
+
         /* Semáforo de Planta Andon */
         .status-banner {{
             border-radius: 12px;
@@ -837,7 +867,34 @@ def build():
     <link rel="stylesheet" href="daily_summary.css?v=compact-2">
 </head>
 <body>
-    <div class="dashboard-layout">
+    <section class="login-screen" id="loginScreen" aria-labelledby="loginTitle">
+        <div class="login-layout">
+            <div class="login-card">
+                <div class="login-brand">⚙️ TABLERO ANDON 4.0</div>
+                <h1 id="loginTitle">Iniciar sesión</h1>
+                <p class="login-intro">Mantenimiento predictivo de la prensa troqueladora</p>
+                <form id="loginForm">
+                    <label for="loginUsername">Usuario</label>
+                    <input id="loginUsername" type="text" autocomplete="username" required placeholder="Escribe tu usuario" autofocus>
+                    <label for="loginPassword">Contraseña</label>
+                    <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Escribe tu contraseña">
+                    <p id="loginError" class="login-error" role="alert" hidden>Usuario o contraseña incorrectos. Revisa los datos del cuadro de acceso.</p>
+                    <button type="submit" class="login-submit">Entrar al tablero →</button>
+                </form>
+            </div>
+            <aside class="login-credentials" aria-labelledby="credentialsTitle">
+                <div class="credentials-icon" aria-hidden="true">🎓</div>
+                <h2 id="credentialsTitle">Acceso para el profesor</h2>
+                <p>Utiliza estos datos para entrar al tablero.</p>
+                <dl>
+                    <dt>Usuario</dt><dd><code>ususario</code></dd>
+                    <dt>Contraseña</dt><dd><code>artefacto</code></dd>
+                </dl>
+                <p class="login-demo">Acceso de demostración</p>
+            </aside>
+        </div>
+    </section>
+    <div class="dashboard-layout" id="dashboard" hidden>
     <div class="container">
         <!-- HEADER ANDON -->
         <header class="andon-header">
@@ -1450,6 +1507,7 @@ def build():
         }}
 
         function updateChart() {{
+            if (document.getElementById('dashboard').hidden) return;
             if (!document.getElementById('dayCharts').open) return;
             for (const [sensor, canvasId] of [['vib', 'trendVib'], ['temp', 'trendTemp'], ['pres', 'trendPres'], ['corr', 'trendCorr']]) {{
                 drawSensorChart(sensor, canvasId);
@@ -1709,11 +1767,29 @@ def build():
             }}
         }}
 
-        window.addEventListener('load', () => {{
-            updateThemeButton();
+        document.getElementById('loginForm').addEventListener('submit', event => {{
+            event.preventDefault();
+            const username = document.getElementById('loginUsername');
+            const password = document.getElementById('loginPassword');
+            const error = document.getElementById('loginError');
+            if (username.value !== 'ususario' || password.value !== 'artefacto') {{
+                error.hidden = false;
+                password.focus();
+                return;
+            }}
+            error.hidden = true;
+            password.value = '';
+            document.getElementById('loginScreen').hidden = true;
+            document.getElementById('dashboard').hidden = false;
             renderTable();
             selectScenario('completa');
             togglePlay();
+            document.querySelector('#headerCalendar > summary').focus({{ preventScroll: true }});
+            window.scrollTo(0, 0);
+        }});
+
+        window.addEventListener('load', () => {{
+            updateThemeButton();
         }});
 
         document.getElementById('dayCharts').addEventListener('toggle', updateChart);
