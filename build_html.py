@@ -380,6 +380,7 @@ def build():
             border: 1px solid var(--border-color);
             border-radius: 12px;
         }}
+        .local-session-clock {{ font-size: 18px; color: var(--text-muted); margin: 0 0 16px; }}
         .day-chart-toolbar h3 {{ font-size: 24px; }}
         #dayPlayBtn {{ font-size: 20px; padding: 12px 18px; }}
 
@@ -988,6 +989,7 @@ def build():
             <h3 id="chartTitle">📈 Tomas del día</h3>
             <button type="button" class="btn-play" id="dayPlayBtn" onclick="toggleDayPlayback()" aria-pressed="false">▶ Reproducir tomas</button>
         </div>
+        <p id="localSessionClock" class="local-session-clock"></p>
         <details id="dayCharts" open>
         <summary id="historicalChartToggle" hidden>📈 Ver gráficas completas del día</summary>
         <!-- GRÁFICA DE TENDENCIAS EN TIEMPO REAL -->
@@ -1084,18 +1086,68 @@ def build():
             if (!DAYS.has(sample.date)) DAYS.set(sample.date, []);
             DAYS.get(sample.date).push(sample);
         }}
-        const availableDays = Array.from(DAYS.keys()).sort();
-        const initialDay = availableDays.find(date => date.startsWith('2026-04-')) || availableDays[0];
+        let availableDays = Array.from(DAYS.keys()).sort();
+        let initialDay = availableDays.find(date => date.startsWith('2026-04-')) || availableDays[0];
         let selectedDay = initialDay;
         let isHistoricalView = false;
 
         let activeScenarioKey = 'completa';
         let currentTomaIdx = 0;
+        let progressiveStartIdx = 0;
         let isPlaying = false;
         let playInterval = null;
         const chartCaches = new Map();
 
         let calendarMonth = null;
+
+        let localSessionStart = null;
+
+        function localDateString(date) {{
+            return `${{date.getFullYear()}}-${{String(date.getMonth() + 1).padStart(2, '0')}}-${{String(date.getDate()).padStart(2, '0')}}`;
+        }}
+
+        function localStartTime(date) {{
+            const minutes = date.getHours() * 60 + date.getMinutes();
+            const start = minutes < 8 * 60 ? 8 * 60 : minutes >= 18 * 60 ? 17 * 60 : minutes;
+            return `${{String(Math.floor(start / 60)).padStart(2, '0')}}:${{String(start % 60).padStart(2, '0')}}`;
+        }}
+
+        function prepareLocalSession(now = new Date()) {{
+            const date = localDateString(now);
+            const time = localStartTime(now);
+            let sourceDay = DAYS.get(date)?.[0]?.sourceTimestamp?.slice(0, 10) || date;
+            if (!DAYS.has(date)) {{
+                sourceDay = availableDays.find(day => day.startsWith('2026-04-')) || availableDays[0];
+                const rows = DAYS.get(sourceDay).map(row => ({{
+                    ...row,
+                    sourceTimestamp: row.t,
+                    date,
+                    t: `${{date}} ${{row.hm}}:00`
+                }}));
+                DAYS.set(date, rows);
+                availableDays = Array.from(DAYS.keys()).sort();
+            }}
+            localSessionStart = {{ enteredAt: now.toISOString(), date, time, sourceDay }};
+            initialDay = date;
+            selectedDay = date;
+            calendarMonth = null;
+            isHistoricalView = false;
+            const picker = document.getElementById('dayCalendar');
+            picker.min = availableDays[0];
+            picker.max = availableDays[availableDays.length - 1];
+            const label = document.getElementById('localSessionClock');
+            label.textContent = `Inicio local: ${{now.toLocaleString('es-CO')}} · Reproducción simulada`;
+            label.title = `Telemetría de referencia: ${{sourceDay}}. Los valores originales de los sensores se conservan.`;
+        }}
+
+        function localStartIndex() {{
+            if (!localSessionStart) return 0;
+            const rows = DAYS.get(localSessionStart.date) || [];
+            const index = rows.findIndex(row => row.hm >= localSessionStart.time);
+            return index >= 0 ? index : Math.max(0, rows.length - 1);
+        }}
+
+
 
         function renderHeaderCalendar() {{
             if (!calendarMonth) calendarMonth = selectedDay.slice(0, 7);
@@ -1210,12 +1262,14 @@ def build():
                 isHistoricalView = false;
                 selectScenario('completa');
             }} else if (!isPlaying && currentTomaIdx >= getActiveList().length - 1) {{
+                progressiveStartIdx = 0;
                 updateUI(0);
             }}
             togglePlay();
         }}
 
         function configureDayView() {{
+            progressiveStartIdx = 0;
             const charts = document.getElementById('dayCharts');
             charts.open = !isHistoricalView;
             document.getElementById('historicalChartToggle').hidden = !isHistoricalView;
@@ -1683,16 +1737,17 @@ def build():
 
             // Cantidad de puntos a dibujar
             const drawCount = drawMode === 'progressive' ? (currentTomaIdx + 1) : totalT;
+            const drawStart = drawMode === 'progressive' ? Math.min(progressiveStartIdx, currentTomaIdx) : 0;
 
             // 3. Trazo Instantáneo
             if (drawCount > 1) {{
                 ctx.beginPath();
                 ctx.strokeStyle = themeColor('--chart-raw');
                 ctx.lineWidth = totalT > 100 ? 1.2 : 1.6;
-                for (let i = 0; i < drawCount; i++) {{
+                for (let i = drawStart; i < drawCount; i++) {{
                     const x = getX(i);
                     const y = getY(fullList[i][rawKey]);
-                    if (i === 0) ctx.moveTo(x, y);
+                    if (i === drawStart) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }}
                 ctx.stroke();
@@ -1701,10 +1756,10 @@ def build():
                 ctx.beginPath();
                 ctx.strokeStyle = themeColor('--chart-mean');
                 ctx.lineWidth = totalT > 100 ? 2.4 : 2.8;
-                for (let i = 0; i < drawCount; i++) {{
+                for (let i = drawStart; i < drawCount; i++) {{
                     const x = getX(i);
                     const mVal = fullList[i][meanKey] || fullList[i][rawKey];
-                    if (i === 0) ctx.moveTo(x, getY(mVal));
+                    if (i === drawStart) ctx.moveTo(x, getY(mVal));
                     else ctx.lineTo(x, getY(mVal));
                 }}
                 ctx.stroke();
@@ -1800,10 +1855,12 @@ def build():
         function saveDashboardSession() {{
             if (document.getElementById('dashboard').hidden) return;
             const state = {{
+                enteredAt: localSessionStart?.enteredAt,
                 date: selectedDay,
                 scenario: activeScenarioKey,
                 sensor: selectedScenarioSensor,
                 index: currentTomaIdx,
+                progressiveStartIdx,
                 historical: isHistoricalView,
                 playing: isPlaying,
                 drawMode: document.getElementById('drawModeSelect').value,
@@ -1825,6 +1882,8 @@ def build():
                 state = JSON.parse(sessionStorage.getItem('andon-view-state') || 'null');
             }} catch (_) {{}}
             if (!authenticated) return;
+            const savedStart = state?.enteredAt ? new Date(state.enteredAt) : new Date();
+            prepareLocalSession(Number.isFinite(savedStart.getTime()) ? savedStart : new Date());
             document.getElementById('loginScreen').hidden = true;
             document.getElementById('dashboard').hidden = false;
             renderTable();
@@ -1834,6 +1893,7 @@ def build():
                 const scenario = state.scenario === 'completa' || SCENARIO_METADATA[state.scenario]?.available ? state.scenario : 'completa';
                 isHistoricalView = scenario === 'completa' && state.historical === true;
                 selectScenario(scenario);
+                if (Number.isInteger(state.progressiveStartIdx)) progressiveStartIdx = Math.max(0, Math.min(getActiveList().length - 1, state.progressiveStartIdx));
                 if (Number.isInteger(state.index)) updateUI(state.index);
                 if (!isHistoricalView && ['full', 'progressive'].includes(state.drawMode)) document.getElementById('drawModeSelect').value = state.drawMode;
                 document.getElementById('dayCharts').open = !isHistoricalView || state.chartsOpen === true;
@@ -1851,6 +1911,8 @@ def build():
                 }});
             }} else {{
                 selectScenario('completa');
+                progressiveStartIdx = localStartIndex();
+                updateUI(progressiveStartIdx);
                 togglePlay();
             }}
         }}
@@ -1873,8 +1935,11 @@ def build():
             document.documentElement.dataset.sessionActive = 'true';
             document.getElementById('loginScreen').hidden = true;
             document.getElementById('dashboard').hidden = false;
+            prepareLocalSession();
             renderTable();
             selectScenario('completa');
+            progressiveStartIdx = localStartIndex();
+            updateUI(progressiveStartIdx);
             togglePlay();
             document.querySelector('#headerCalendar > summary').focus({{ preventScroll: true }});
             window.scrollTo(0, 0);
