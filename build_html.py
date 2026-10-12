@@ -1216,7 +1216,7 @@ def build():
                         togglePlay(); return;
                     }}
                     updateUI(next);
-                }}, 250);
+                }}, 1000);
             }}
         }}
 
@@ -1483,6 +1483,7 @@ def build():
             updateThemeButton();
             renderTable();
             selectScenario('completa');
+            togglePlay();
         }});
 
         window.addEventListener('resize', updateChart);
