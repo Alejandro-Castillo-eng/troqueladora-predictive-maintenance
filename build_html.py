@@ -1093,7 +1093,6 @@ def build():
 
         let activeScenarioKey = 'completa';
         let currentTomaIdx = 0;
-        let progressiveStartIdx = 0;
         let isPlaying = false;
         let playInterval = null;
         const chartCaches = new Map();
@@ -1262,14 +1261,12 @@ def build():
                 isHistoricalView = false;
                 selectScenario('completa');
             }} else if (!isPlaying && currentTomaIdx >= getActiveList().length - 1) {{
-                progressiveStartIdx = 0;
                 updateUI(0);
             }}
             togglePlay();
         }}
 
         function configureDayView() {{
-            progressiveStartIdx = 0;
             const charts = document.getElementById('dayCharts');
             charts.open = !isHistoricalView;
             document.getElementById('historicalChartToggle').hidden = !isHistoricalView;
@@ -1737,17 +1734,16 @@ def build():
 
             // Cantidad de puntos a dibujar
             const drawCount = drawMode === 'progressive' ? (currentTomaIdx + 1) : totalT;
-            const drawStart = drawMode === 'progressive' ? Math.min(progressiveStartIdx, currentTomaIdx) : 0;
 
             // 3. Trazo Instantáneo
             if (drawCount > 1) {{
                 ctx.beginPath();
                 ctx.strokeStyle = themeColor('--chart-raw');
                 ctx.lineWidth = totalT > 100 ? 1.2 : 1.6;
-                for (let i = drawStart; i < drawCount; i++) {{
+                for (let i = 0; i < drawCount; i++) {{
                     const x = getX(i);
                     const y = getY(fullList[i][rawKey]);
-                    if (i === drawStart) ctx.moveTo(x, y);
+                    if (i === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 }}
                 ctx.stroke();
@@ -1756,10 +1752,10 @@ def build():
                 ctx.beginPath();
                 ctx.strokeStyle = themeColor('--chart-mean');
                 ctx.lineWidth = totalT > 100 ? 2.4 : 2.8;
-                for (let i = drawStart; i < drawCount; i++) {{
+                for (let i = 0; i < drawCount; i++) {{
                     const x = getX(i);
                     const mVal = fullList[i][meanKey] || fullList[i][rawKey];
-                    if (i === drawStart) ctx.moveTo(x, getY(mVal));
+                    if (i === 0) ctx.moveTo(x, getY(mVal));
                     else ctx.lineTo(x, getY(mVal));
                 }}
                 ctx.stroke();
@@ -1860,7 +1856,6 @@ def build():
                 scenario: activeScenarioKey,
                 sensor: selectedScenarioSensor,
                 index: currentTomaIdx,
-                progressiveStartIdx,
                 historical: isHistoricalView,
                 playing: isPlaying,
                 drawMode: document.getElementById('drawModeSelect').value,
@@ -1893,7 +1888,6 @@ def build():
                 const scenario = state.scenario === 'completa' || SCENARIO_METADATA[state.scenario]?.available ? state.scenario : 'completa';
                 isHistoricalView = scenario === 'completa' && state.historical === true;
                 selectScenario(scenario);
-                if (Number.isInteger(state.progressiveStartIdx)) progressiveStartIdx = Math.max(0, Math.min(getActiveList().length - 1, state.progressiveStartIdx));
                 if (Number.isInteger(state.index)) updateUI(state.index);
                 if (!isHistoricalView && ['full', 'progressive'].includes(state.drawMode)) document.getElementById('drawModeSelect').value = state.drawMode;
                 document.getElementById('dayCharts').open = !isHistoricalView || state.chartsOpen === true;
@@ -1911,8 +1905,7 @@ def build():
                 }});
             }} else {{
                 selectScenario('completa');
-                progressiveStartIdx = localStartIndex();
-                updateUI(progressiveStartIdx);
+                updateUI(localStartIndex());
                 togglePlay();
             }}
         }}
@@ -1938,8 +1931,7 @@ def build():
             prepareLocalSession();
             renderTable();
             selectScenario('completa');
-            progressiveStartIdx = localStartIndex();
-            updateUI(progressiveStartIdx);
+            updateUI(localStartIndex());
             togglePlay();
             document.querySelector('#headerCalendar > summary').focus({{ preventScroll: true }});
             window.scrollTo(0, 0);
