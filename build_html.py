@@ -468,8 +468,8 @@ def build():
         }}
 
         .sensor-reading {{
-            font-size: 40px;
-            font-weight: 800;
+            font-size: 56px;
+            font-weight: 900;
             color: #ffffff;
             margin: 10px 0 8px;
         }}
@@ -490,6 +490,7 @@ def build():
             width: fit-content;
         }}
 
+        .badge[hidden] {{ display: none; }}
         .badge.normal {{ background: #064e3b; color: #6ee7b7; }}
         .badge.warning {{ background: #78350f; color: #fcd34d; }}
         .badge.critical {{ background: #7f1d1d; color: #fca5a5; }}
@@ -785,7 +786,7 @@ def build():
                 <div>
                     <div class="sensor-title">🌡️ Temperatura Motor</div>
                     <div class="sensor-reading"><span id="valTemp">52.4</span> <span class="sensor-unit">°C</span></div>
-                    <span class="badge normal" id="badgeTemp">NOMINAL</span>
+                    <span class="badge normal" id="badgeTemp" hidden></span>
                 </div>
             </div>
 
@@ -794,7 +795,7 @@ def build():
                 <div>
                     <div class="sensor-title">💧 Presión Hidráulica</div>
                     <div class="sensor-reading"><span id="valPres">214.8</span> <span class="sensor-unit">bar</span></div>
-                    <span class="badge normal" id="badgePres">NOMINAL</span>
+                    <span class="badge normal" id="badgePres" hidden></span>
                 </div>
             </div>
 
@@ -803,7 +804,7 @@ def build():
                 <div>
                     <div class="sensor-title">📳 Vibración RMS</div>
                     <div class="sensor-reading"><span id="valVib">1.32</span> <span class="sensor-unit">mm/s</span></div>
-                    <span class="badge normal" id="badgeVib">NOMINAL</span>
+                    <span class="badge normal" id="badgeVib" hidden></span>
                 </div>
             </div>
 
@@ -812,7 +813,7 @@ def build():
                 <div>
                     <div class="sensor-title">⚡ Corriente Motor</div>
                     <div class="sensor-reading"><span id="valCorr">20.9</span> <span class="sensor-unit">A</span></div>
-                    <span class="badge normal" id="badgeCorr">NOMINAL</span>
+                    <span class="badge normal" id="badgeCorr" hidden></span>
                 </div>
             </div>
         </div>
@@ -1057,10 +1058,10 @@ def build():
 
             document.getElementById('valCorr').innerText = sample.corr.toFixed(1);
 
-            setBadge('badgeTemp', sample.temp_m < 58 ? 'normal' : (sample.temp_m < 68 ? 'warning' : 'critical'), sample.temp_m < 58 ? 'NOMINAL' : (sample.temp_m < 68 ? 'ELEVADA' : 'CRÍTICA'));
-            setBadge('badgePres', sample.pres_m > 204 ? 'normal' : (sample.pres_m > 185 ? 'warning' : 'critical'), sample.pres_m > 204 ? 'NOMINAL' : (sample.pres_m > 185 ? 'BAJA' : 'CRÍTICA'));
-            setBadge('badgeVib', sample.vib_m < 2.2 ? 'normal' : (sample.vib_m < 3.8 ? 'warning' : 'critical'), sample.vib_m < 2.2 ? 'NOMINAL' : (sample.vib_m < 3.8 ? 'ALERTA' : 'CRÍTICA'));
-            setBadge('badgeCorr', sample.corr_m < 23.5 ? 'normal' : (sample.corr_m < 28.5 ? 'warning' : 'critical'), sample.corr_m < 23.5 ? 'NOMINAL' : (sample.corr_m < 28.5 ? 'SOBRECARGA' : 'CRÍTICA'));
+            setBadge('badgeTemp', sample.temp_m < 58 ? 'normal' : (sample.temp_m < 68 ? 'warning' : 'critical'), sample.temp_m < 58 ? '' : (sample.temp_m < 68 ? 'ELEVADA' : 'CRÍTICA'));
+            setBadge('badgePres', sample.pres_m > 204 ? 'normal' : (sample.pres_m > 185 ? 'warning' : 'critical'), sample.pres_m > 204 ? '' : (sample.pres_m > 185 ? 'BAJA' : 'CRÍTICA'));
+            setBadge('badgeVib', sample.vib_m < 2.2 ? 'normal' : (sample.vib_m < 3.8 ? 'warning' : 'critical'), sample.vib_m < 2.2 ? '' : (sample.vib_m < 3.8 ? 'ALERTA' : 'CRÍTICA'));
+            setBadge('badgeCorr', sample.corr_m < 23.5 ? 'normal' : (sample.corr_m < 28.5 ? 'warning' : 'critical'), sample.corr_m < 23.5 ? '' : (sample.corr_m < 28.5 ? 'SOBRECARGA' : 'CRÍTICA'));
 
             const banner = document.getElementById('statusBanner');
             const title = document.getElementById('statusTitle');
@@ -1109,6 +1110,7 @@ def build():
             const el = document.getElementById(id);
             el.className = 'badge ' + cls;
             el.innerText = text;
+            el.hidden = text === '';
         }}
 
         function selectScenarioSensor(sensor) {{
