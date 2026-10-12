@@ -157,6 +157,7 @@ def build():
     <script>
         try {{ document.documentElement.dataset.theme = localStorage.getItem('andon-theme') === 'light' ? 'light' : 'dark'; }}
         catch (_) {{ document.documentElement.dataset.theme = 'dark'; }}
+        try {{ if (sessionStorage.getItem('andon-authenticated') === 'true') document.documentElement.dataset.sessionActive = 'true'; }} catch (_) {{}}
     </script>
     <title>Tablero Andon 4.0 - Secuencia Completa de Telemetría (Inicio a Fin)</title>
     <style>
@@ -296,6 +297,7 @@ def build():
             gap: 16px;
             flex-wrap: wrap;
         }}
+        .logout-button {{ font-size: 18px; border-color: var(--red-main); color: var(--red-main); background: var(--bg-card); }}
         .header-calendar {{ position: relative; text-align: left; }}
         .header-calendar > summary {{
             list-style: none;
@@ -381,6 +383,7 @@ def build():
         .day-chart-toolbar h3 {{ font-size: 24px; }}
         #dayPlayBtn {{ font-size: 20px; padding: 12px 18px; }}
 
+        [data-session-active="true"] #loginScreen {{ display: none; }}
         #dashboard[hidden], #loginScreen[hidden], #loginError[hidden] {{ display: none; }}
         .login-screen {{ min-height: calc(100svh - 40px); display: grid; place-items: center; }}
         .login-layout {{ width: min(960px, 100%); display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; align-items: stretch; }}
@@ -902,6 +905,7 @@ def build():
                 <h1>⚙️ TABLERO ANDON 4.0 · PRENSA TROQUELADORA</h1>
             </div>
             <div class="header-meta">
+                <button type="button" class="btn-action logout-button" id="logoutBtn" onclick="logoutDashboard()">Cerrar sesión</button>
                 <details class="header-calendar" id="headerCalendar">
                     <summary aria-label="Abrir calendario de registros">📅 <span id="headerCalendarDate">Calendario de registros</span> ▾</summary>
                     <div class="calendar-popover">
@@ -1767,6 +1771,92 @@ def build():
             }}
         }}
 
+        function logoutDashboard() {{
+            clearInterval(playInterval);
+            playInterval = null;
+            isPlaying = false;
+            try {{
+                sessionStorage.removeItem('andon-authenticated');
+                sessionStorage.removeItem('andon-view-state');
+            }} catch (_) {{}}
+            delete document.documentElement.dataset.sessionActive;
+            document.getElementById('dashboard').hidden = true;
+            document.getElementById('loginScreen').hidden = false;
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').hidden = true;
+            selectedDay = initialDay;
+            selectedScenarioSensor = 'vib';
+            activeScenarioKey = 'completa';
+            currentTomaIdx = 0;
+            isHistoricalView = false;
+            calendarMonth = null;
+            document.getElementById('headerCalendar').open = false;
+            document.getElementById('telemetryControls').open = false;
+            document.getElementById('loginUsername').focus({{ preventScroll: true }});
+            window.scrollTo(0, 0);
+        }}
+
+        function saveDashboardSession() {{
+            if (document.getElementById('dashboard').hidden) return;
+            const state = {{
+                date: selectedDay,
+                scenario: activeScenarioKey,
+                sensor: selectedScenarioSensor,
+                index: currentTomaIdx,
+                historical: isHistoricalView,
+                playing: isPlaying,
+                drawMode: document.getElementById('drawModeSelect').value,
+                chartsOpen: document.getElementById('dayCharts').open,
+                controlsOpen: document.getElementById('telemetryControls').open,
+                calendarOpen: document.getElementById('headerCalendar').open,
+                calendarMonth,
+                scrollY: window.scrollY,
+                tableScroll: document.querySelector('.table-wrap').scrollTop
+            }};
+            try {{ sessionStorage.setItem('andon-view-state', JSON.stringify(state)); }} catch (_) {{}}
+        }}
+
+        function restoreDashboardSession() {{
+            let authenticated = false;
+            let state = null;
+            try {{
+                authenticated = sessionStorage.getItem('andon-authenticated') === 'true';
+                state = JSON.parse(sessionStorage.getItem('andon-view-state') || 'null');
+            }} catch (_) {{}}
+            if (!authenticated) return;
+            document.getElementById('loginScreen').hidden = true;
+            document.getElementById('dashboard').hidden = false;
+            renderTable();
+            if (state && typeof state === 'object') {{
+                selectedDay = DAYS.has(state.date) ? state.date : initialDay;
+                if (['vib', 'temp', 'pres', 'corr'].includes(state.sensor)) selectedScenarioSensor = state.sensor;
+                const scenario = state.scenario === 'completa' || SCENARIO_METADATA[state.scenario]?.available ? state.scenario : 'completa';
+                isHistoricalView = scenario === 'completa' && state.historical === true;
+                selectScenario(scenario);
+                if (Number.isInteger(state.index)) updateUI(state.index);
+                if (!isHistoricalView && ['full', 'progressive'].includes(state.drawMode)) document.getElementById('drawModeSelect').value = state.drawMode;
+                document.getElementById('dayCharts').open = !isHistoricalView || state.chartsOpen === true;
+                document.getElementById('telemetryControls').open = state.controlsOpen === true;
+                if (typeof state.calendarMonth === 'string' && /^[0-9]{{4}}-[0-9]{{2}}$/.test(state.calendarMonth) && state.calendarMonth >= availableDays[0].slice(0, 7) && state.calendarMonth <= availableDays[availableDays.length - 1].slice(0, 7)) {{
+                    calendarMonth = state.calendarMonth;
+                    renderHeaderCalendar();
+                }}
+                document.getElementById('headerCalendar').open = state.calendarOpen === true;
+                if (state.playing === true && !isHistoricalView) togglePlay();
+                requestAnimationFrame(() => {{
+                    updateChart();
+                    if (Number.isFinite(state.tableScroll)) document.querySelector('.table-wrap').scrollTop = state.tableScroll;
+                    if (Number.isFinite(state.scrollY)) window.scrollTo(0, state.scrollY);
+                }});
+            }} else {{
+                selectScenario('completa');
+                togglePlay();
+            }}
+        }}
+
+        window.addEventListener('pagehide', saveDashboardSession);
+
         document.getElementById('loginForm').addEventListener('submit', event => {{
             event.preventDefault();
             const username = document.getElementById('loginUsername');
@@ -1779,6 +1869,8 @@ def build():
             }}
             error.hidden = true;
             password.value = '';
+            try {{ sessionStorage.setItem('andon-authenticated', 'true'); sessionStorage.removeItem('andon-view-state'); }} catch (_) {{}}
+            document.documentElement.dataset.sessionActive = 'true';
             document.getElementById('loginScreen').hidden = true;
             document.getElementById('dashboard').hidden = false;
             renderTable();
@@ -1790,6 +1882,7 @@ def build():
 
         window.addEventListener('load', () => {{
             updateThemeButton();
+            restoreDashboardSession();
         }});
 
         document.getElementById('dayCharts').addEventListener('toggle', updateChart);
