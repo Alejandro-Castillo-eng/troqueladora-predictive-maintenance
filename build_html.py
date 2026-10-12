@@ -305,9 +305,9 @@ def build():
             padding: 14px 18px;
             border: 2px solid var(--blue-accent);
             border-radius: 12px;
-            color: var(--blue-accent);
-            background: var(--bg-card-sub);
-            box-shadow: 0 4px 14px rgba(3, 105, 161, 0.18);
+            color: #ffffff;
+            background: linear-gradient(135deg, #0369a1, #075985);
+            box-shadow: 0 6px 20px rgba(3, 105, 161, 0.32);
         }}
         .header-calendar > summary::-webkit-details-marker {{ display: none; }}
         .header-calendar > summary:focus-visible,
