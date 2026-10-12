@@ -887,7 +887,7 @@ def build():
                 <h2 id="credentialsTitle">Acceso para el profesor</h2>
                 <p>Utiliza estos datos para entrar al tablero.</p>
                 <dl>
-                    <dt>Usuario</dt><dd><code>ususario</code></dd>
+                    <dt>Usuario</dt><dd><code>usuario</code></dd>
                     <dt>Contraseña</dt><dd><code>artefacto</code></dd>
                 </dl>
                 <p class="login-demo">Acceso de demostración</p>
@@ -1772,7 +1772,7 @@ def build():
             const username = document.getElementById('loginUsername');
             const password = document.getElementById('loginPassword');
             const error = document.getElementById('loginError');
-            if (username.value !== 'ususario' || password.value !== 'artefacto') {{
+            if (username.value !== 'usuario' || password.value !== 'artefacto') {{
                 error.hidden = false;
                 password.focus();
                 return;
