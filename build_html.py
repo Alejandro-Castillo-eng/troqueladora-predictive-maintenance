@@ -289,6 +289,68 @@ def build():
             margin-bottom: 4px;
         }}
 
+        .header-meta {{
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 16px;
+            flex-wrap: wrap;
+        }}
+        .header-calendar {{ position: relative; text-align: left; }}
+        .header-calendar > summary {{
+            list-style: none;
+            cursor: pointer;
+            font-size: 26px;
+            font-weight: 800;
+            padding: 14px 18px;
+            border: 2px solid var(--blue-accent);
+            border-radius: 12px;
+            color: var(--blue-accent);
+            background: var(--bg-card-sub);
+            box-shadow: 0 4px 14px rgba(3, 105, 161, 0.18);
+        }}
+        .header-calendar > summary::-webkit-details-marker {{ display: none; }}
+        .header-calendar > summary:focus-visible,
+        .calendar-popover button:focus-visible {{ outline: 3px solid var(--blue-accent); outline-offset: 3px; }}
+        .calendar-popover {{
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            z-index: 20;
+            width: 390px;
+            max-width: calc(100vw - 48px);
+            padding: 18px;
+            border: 2px solid var(--blue-accent);
+            border-radius: 16px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+        }}
+        .calendar-month-nav {{ display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }}
+        .calendar-month-nav strong {{ font-size: 22px; text-transform: capitalize; text-align: center; }}
+        .calendar-popover button {{ cursor: pointer; font-family: inherit; }}
+        .calendar-month-nav button {{ font-size: 22px; padding: 8px; border: 0; border-radius: 8px; background: var(--bg-card-sub); color: var(--blue-accent); }}
+        .calendar-weekdays, .calendar-days {{ display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; text-align: center; }}
+        .calendar-weekdays {{ font-size: 18px; font-weight: 700; margin-bottom: 8px; }}
+        .calendar-day {{ min-height: 44px; font-size: 22px; font-weight: 800; border: 1px solid var(--blue-accent); border-radius: 8px; color: var(--blue-accent); background: var(--bg-card-sub); }}
+        .calendar-day:not(:disabled):hover {{ box-shadow: inset 0 0 0 2px var(--blue-accent); }}
+        .calendar-day[aria-current="date"] {{ background: var(--blue-accent); color: var(--preset-active-text); }}
+        .calendar-day:disabled, .calendar-month-nav button:disabled {{ opacity: 0.3; cursor: default; border-color: transparent; }}
+        .calendar-legend {{ font-size: 18px; font-weight: 700; color: var(--blue-accent); margin-top: 14px; }}
+
+        @media (max-width: 700px) {{
+            .calendar-popover {{
+                position: fixed;
+                top: 120px;
+                left: 24px;
+                right: 24px;
+                width: auto;
+                max-width: none;
+                max-height: calc(100dvh - 144px);
+                overflow-y: auto;
+            }}
+        }}
+
         /* Semáforo de Planta Andon */
         .status-banner {{
             border-radius: 12px;
@@ -753,7 +815,19 @@ def build():
                 <h1>⚙️ TABLERO ANDON 4.0 · PRENSA TROQUELADORA</h1>
             </div>
             <div class="header-meta">
-                <span class="shift-badge" id="sequenceBadge">SECUENCIA COMPLETA (INICIO A FIN)</span>
+                <details class="header-calendar" id="headerCalendar">
+                    <summary aria-label="Abrir calendario de registros">📅 <span id="headerCalendarDate">Calendario de registros</span> ▾</summary>
+                    <div class="calendar-popover">
+                        <div class="calendar-month-nav">
+                            <button type="button" id="calendarPrev" aria-label="Mes anterior" onclick="moveCalendarMonth(-1)">◀</button>
+                            <strong id="calendarMonthTitle" aria-live="polite"></strong>
+                            <button type="button" id="calendarNext" aria-label="Mes siguiente" onclick="moveCalendarMonth(1)">▶</button>
+                        </div>
+                        <div class="calendar-weekdays" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                        <div class="calendar-days" id="calendarDays" aria-label="Días del mes"></div>
+                        <p class="calendar-legend">● Días con registros</p>
+                    </div>
+                </details>
                 <button type="button" class="btn-action" id="themeToggle" onclick="toggleTheme()" aria-pressed="false">☀️ Modo claro</button>
             </div>
         </header>
@@ -922,6 +996,67 @@ def build():
         let isPlaying = false;
         let playInterval = null;
         const chartCaches = new Map();
+
+        let calendarMonth = null;
+
+        function renderHeaderCalendar() {{
+            if (!calendarMonth) calendarMonth = selectedDay.slice(0, 7);
+            const [year, month] = calendarMonth.split('-').map(Number);
+            const start = new Date(year, month - 1, 1);
+            const count = new Date(year, month, 0).getDate();
+            document.getElementById('calendarMonthTitle').textContent = start.toLocaleDateString('es-CO', {{ month: 'long', year: 'numeric' }});
+            document.getElementById('calendarPrev').disabled = calendarMonth <= availableDays[0].slice(0, 7);
+            document.getElementById('calendarNext').disabled = calendarMonth >= availableDays[availableDays.length - 1].slice(0, 7);
+            const grid = document.getElementById('calendarDays');
+            grid.replaceChildren();
+            for (let blank = 0; blank < (start.getDay() + 6) % 7; blank++) grid.appendChild(document.createElement('span'));
+            for (let day = 1; day <= count; day++) {{
+                const date = `${{calendarMonth}}-${{String(day).padStart(2, '0')}}`;
+                const rows = DAYS.get(date);
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'calendar-day';
+                button.textContent = day;
+                button.dataset.date = date;
+                button.disabled = !rows;
+                button.setAttribute('aria-label', `${{date.split('-').reverse().join('/')}} · ${{rows ? rows.length + ' tomas registradas' : 'Sin registros'}}`);
+                button.title = button.getAttribute('aria-label');
+                if (date === selectedDay) button.setAttribute('aria-current', 'date');
+                button.addEventListener('click', () => {{
+                    selectDay(date, isPlaying);
+                    document.getElementById('headerCalendar').open = false;
+                    document.querySelector('#headerCalendar > summary').focus();
+                }});
+                grid.appendChild(button);
+            }}
+        }}
+
+        function syncHeaderCalendar() {{
+            document.getElementById('headerCalendarDate').textContent = selectedDay.split('-').reverse().join('/');
+            calendarMonth = selectedDay.slice(0, 7);
+            renderHeaderCalendar();
+        }}
+
+        function moveCalendarMonth(delta) {{
+            const [year, month] = calendarMonth.split('-').map(Number);
+            const next = new Date(year, month - 1 + delta, 1);
+            const candidate = `${{next.getFullYear()}}-${{String(next.getMonth() + 1).padStart(2, '0')}}`;
+            if (candidate < availableDays[0].slice(0, 7) || candidate > availableDays[availableDays.length - 1].slice(0, 7)) return;
+            calendarMonth = candidate;
+            renderHeaderCalendar();
+        }}
+
+        document.addEventListener('click', event => {{
+            const calendar = document.getElementById('headerCalendar');
+            if (!calendar.contains(event.target)) calendar.open = false;
+        }});
+        document.addEventListener('keydown', event => {{
+            const calendar = document.getElementById('headerCalendar');
+            if (event.key === 'Escape' && calendar.open) {{
+                calendar.open = false;
+                calendar.querySelector('summary').focus();
+            }}
+        }});
 
         function updateThemeButton() {{
             const light = document.documentElement.dataset.theme === 'light';
@@ -1166,15 +1301,14 @@ def build():
             chartCaches.clear();
             document.getElementById('dayCalendar').value = scenarioKey === 'completa' ? selectedDay : list[0].date;
             document.getElementById('daySummary').innerText = list.length ? `${{list.length}} tomas · ${{list[0].hm}} a ${{list[list.length - 1].hm}}` : 'No hay registros para esta fecha';
+            syncHeaderCalendar();
 
             if (scenarioKey === 'completa') {{
-                document.getElementById('sequenceBadge').innerText = `TELEMETRÍA DEL DÍA: ${{selectedDay}}`;
                 document.getElementById('chartTitle').innerText = `📈 Tomas del día · ${{selectedDay}}`;
                 slider.value = 0;
                 updateUI(0);
             }} else {{
                 const info = SCENARIO_METADATA[scenarioKey];
-                document.getElementById('sequenceBadge').innerText = `${{info.sensor}} · ${{info.kind.toUpperCase()}} (80 TOMAS)`;
                 document.getElementById('chartTitle').innerText = `📈 ${{info.sensor}} · ${{info.kind}} · ${{info.start.slice(0,10)}}`;
                 
                 let startIdx = info.kind === 'pico' ? info.anchor_index : 0;
