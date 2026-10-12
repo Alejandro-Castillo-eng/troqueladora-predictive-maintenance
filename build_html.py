@@ -511,13 +511,31 @@ def build():
             margin-bottom: 24px;
         }}
 
-        .control-panel h3 {{
+        .control-panel summary {{
             font-size: 20px;
-            margin-bottom: 8px;
+            font-weight: 700;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            cursor: pointer;
+            list-style: none;
         }}
+
+        .control-panel summary::-webkit-details-marker {{ display: none; }}
+        .control-panel summary::after {{
+            content: '▾ Mostrar controles';
+            color: var(--blue-accent);
+            font-size: 16px;
+            white-space: nowrap;
+        }}
+        .control-panel[open] summary::after {{ content: '▴ Ocultar controles'; }}
+        .control-panel summary:focus-visible {{
+            outline: 2px solid var(--blue-accent);
+            outline-offset: 6px;
+            border-radius: 4px;
+        }}
+        .control-panel-content {{ margin-top: 16px; }}
 
         .presets-row {{
             display: flex;
@@ -799,8 +817,9 @@ def build():
         </div>
 
         <!-- PANEL DE SIMULACIÓN Y PRESETS -->
-        <div class="control-panel">
-            <h3>🎮 Centro de Telemetría: Secuencia de Tomas de Datos (Fila a Fila)</h3>
+        <details class="control-panel" id="telemetryControls">
+            <summary>🎮 Centro de Telemetría: Secuencia de Tomas de Datos (Fila a Fila)</summary>
+            <div class="control-panel-content">
 
             <div class="timeline-box" style="margin-bottom: 12px;">
                 <label for="scenarioSensor">Escenarios del sensor:</label>
@@ -831,7 +850,8 @@ def build():
                 <input type="range" id="timeSlider" class="timeline-slider" min="0" max="{len(scenarios['completa']) - 1}" step="1" value="0" oninput="onSliderChange(this.value)">
                 <span id="sliderTimeText" style="font-size: 16px; font-weight: 700; min-width: 270px; text-align: right; color: var(--blue-accent);">Toma #1 de {len(scenarios['completa'])} · {scenarios['completa'][0]['t']}</span>
             </div>
-        </div>
+            </div>
+        </details>
 
         <!-- GRÁFICA DE TENDENCIAS EN TIEMPO REAL -->
         <div class="chart-card">
