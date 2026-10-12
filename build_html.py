@@ -448,7 +448,7 @@ def build():
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 14px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -460,30 +460,31 @@ def build():
         }}
 
         .sensor-title {{
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-muted);
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1.3;
             text-transform: uppercase;
         }}
 
         .sensor-reading {{
-            font-size: 26px;
+            font-size: 40px;
             font-weight: 800;
             color: #ffffff;
-            margin: 6px 0 4px;
+            margin: 10px 0 8px;
         }}
 
         .sensor-unit {{
-            font-size: 16px;
+            font-size: 22px;
             font-weight: 600;
-            color: var(--text-muted);
+            color: var(--text-main);
         }}
 
         .badge {{
             display: inline-block;
-            padding: 3px 8px;
+            padding: 5px 12px;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 800;
             letter-spacing: 0.5px;
             width: fit-content;
