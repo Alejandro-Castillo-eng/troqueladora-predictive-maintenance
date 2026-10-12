@@ -351,6 +351,21 @@ def build():
             }}
         }}
 
+        #dayCharts > summary {{
+            cursor: pointer;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+            border: 2px solid var(--blue-accent);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--blue-accent);
+            font-size: 24px;
+            font-weight: 800;
+        }}
+        #dayCharts > summary:focus-visible {{ outline: 3px solid var(--blue-accent); outline-offset: 3px; }}
+        #dayCharts > summary[hidden], .chart-controls[hidden], .timeline-box[hidden], #dailyAverageLabel[hidden] {{ display: none; }}
+        #dailyAverageLabel {{ font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 16px; }}
+
         /* Semáforo de Planta Andon */
         .status-banner {{
             border-radius: 12px;
@@ -844,7 +859,7 @@ def build():
             </div>
 
             <div class="card health-card">
-                <div class="card-label">Índice de Salud de Máquina</div>
+                <div class="card-label" id="healthLabel">Índice de Salud de Máquina</div>
                 <div class="health-val" id="healthValue" style="color: var(--green-main);">98.5%</div>
                 <div style="font-size: 16px; color: var(--text-muted);" id="healthDesc">Condición: <b>Excelente</b></div>
                 <div class="health-bar-bg">
@@ -853,6 +868,7 @@ def build():
             </div>
         </div>
 
+        <p id="dailyAverageLabel" hidden></p>
         <!-- 4 TARJETAS KPI DE SENSORES -->
         <div class="sensors-grid">
             <!-- 1. Temperatura -->
@@ -929,6 +945,8 @@ def build():
             </div>
         </details>
 
+        <details id="dayCharts" open>
+        <summary id="historicalChartToggle" hidden>📈 Ver gráficas completas del día</summary>
         <!-- GRÁFICA DE TENDENCIAS EN TIEMPO REAL -->
         <div class="chart-card">
             <div class="chart-header">
@@ -950,6 +968,7 @@ def build():
             </div>
         </div>
 
+        </details>
         <!-- BITÁCORA HISTÓRICA DE PARADAS -->
         <div class="table-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -989,7 +1008,10 @@ def build():
             DAYS.get(sample.date).push(sample);
         }}
         const availableDays = Array.from(DAYS.keys()).sort();
-        let selectedDay = availableDays[0];
+        const initialDay = availableDays.find(date => date.startsWith('2026-04-')) || availableDays[0];
+        let selectedDay = initialDay;
+        let playbackDay = initialDay;
+        let isHistoricalView = false;
 
         let activeScenarioKey = 'completa';
         let currentTomaIdx = 0;
@@ -1023,7 +1045,7 @@ def build():
                 button.title = button.getAttribute('aria-label');
                 if (date === selectedDay) button.setAttribute('aria-current', 'date');
                 button.addEventListener('click', () => {{
-                    selectDay(date, isPlaying);
+                    selectDay(date);
                     document.getElementById('headerCalendar').open = false;
                     document.querySelector('#headerCalendar > summary').focus();
                 }});
@@ -1081,10 +1103,37 @@ def build():
 
         function selectDay(date, keepPlaying = false) {{
             if (!date) return;
+            const historical = !keepPlaying && date < playbackDay;
             if (!keepPlaying && isPlaying) togglePlay();
             selectedDay = date;
+            isHistoricalView = historical;
+            if (!historical) playbackDay = date;
             activeScenarioKey = 'completa';
             selectScenario('completa', keepPlaying);
+            if (!historical && !isPlaying && getActiveList().length) togglePlay();
+        }}
+
+        function dailyAverageSample(rows) {{
+            const sample = {{ ...rows[rows.length - 1] }};
+            for (const key of ['temp', 'pres', 'vib', 'corr', 'rul', 'estres']) {{
+                sample[key] = rows.reduce((sum, row) => sum + row[key], 0) / rows.length;
+            }}
+            for (const key of ['temp', 'pres', 'vib', 'corr']) sample[key + '_m'] = sample[key];
+            return sample;
+        }}
+
+        function configureDayView() {{
+            const charts = document.getElementById('dayCharts');
+            charts.open = !isHistoricalView;
+            document.getElementById('historicalChartToggle').hidden = !isHistoricalView;
+            document.getElementById('historicalChartToggle').textContent = `📈 Ver gráficas completas del ${{selectedDay.split('-').reverse().join('/')}}`;
+            document.getElementById('drawModeSelect').value = isHistoricalView ? 'full' : 'progressive';
+            document.querySelector('.chart-controls').hidden = isHistoricalView;
+            document.querySelector('#telemetryControls .timeline-box:last-child').hidden = isHistoricalView;
+            const label = document.getElementById('dailyAverageLabel');
+            label.hidden = !isHistoricalView;
+            label.textContent = `Promedios del ${{selectedDay.split('-').reverse().join('/')}} · ${{getActiveList().length}} lecturas`;
+            document.getElementById('healthLabel').textContent = isHistoricalView ? 'Salud promedio del día' : 'Índice de Salud de Máquina';
         }}
 
         function changeDay(delta, keepPlaying = false) {{
@@ -1178,11 +1227,12 @@ def build():
             }}
             if (idx >= list.length) idx = list.length - 1;
             if (idx < 0) idx = 0;
+            if (isHistoricalView) idx = list.length - 1;
             currentTomaIdx = idx;
-            const sample = list[idx];
+            const sample = isHistoricalView ? dailyAverageSample(list) : list[idx];
             const diag = calculateRULAndState(sample);
 
-            document.getElementById('sliderTimeText').innerText = `Toma #${{idx + 1}} de ${{list.length}} · ${{sample.t}}`;
+            document.getElementById('sliderTimeText').innerText = isHistoricalView ? `${{list.length}} lecturas · Día completo` : `Toma #${{idx + 1}} de ${{list.length}} · ${{sample.t}}`;
             document.getElementById('timeSlider').value = idx;
 
             document.getElementById('valTemp').innerText = sample.temp.toFixed(1);
@@ -1202,7 +1252,7 @@ def build():
             const title = document.getElementById('statusTitle');
             const rulVal = document.getElementById('rulValue');
 
-            const health = Math.max(5, Math.min(100, 100 - (diag.estres * 8.5)));
+            const health = isHistoricalView ? list.reduce((sum, row) => sum + Math.max(5, Math.min(100, 100 - row.estres * 8.5)), 0) / list.length : Math.max(5, Math.min(100, 100 - (diag.estres * 8.5)));
             document.getElementById('healthValue').innerText = health.toFixed(1) + '%';
             document.getElementById('healthBarFill').style.width = health + '%';
 
@@ -1236,6 +1286,11 @@ def build():
                 document.getElementById('healthBarFill').style.background = 'var(--red-main)';
                 document.getElementById('healthDesc').innerHTML = 'Condición: <b>Peligro Crítico</b>';
 
+            }}
+
+            if (isHistoricalView) {{
+                title.innerText = '📊 RESUMEN DEL DÍA';
+                rulVal.innerText = `RUL PROMEDIO: ${{sample.rul.toFixed(2)}} DÍAS`;
             }}
 
             updateChart();
@@ -1275,6 +1330,7 @@ def build():
             updateScenarioButtons();
             if (!keepPlaying && isPlaying) togglePlay();
             activeScenarioKey = scenarioKey;
+            if (scenarioKey !== 'completa') isHistoricalView = false;
             const buttons = {{
                 'completa': 'btnPresetCompleta',
                 'normal': 'btnPreset1',
@@ -1296,12 +1352,13 @@ def build():
             const slider = document.getElementById('timeSlider');
             if (scenarioKey !== 'completa') selectedDay = list[0].date;
             slider.max = Math.max(0, list.length - 1);
-            slider.disabled = !list.length;
-            document.getElementById('playBtn').disabled = !list.length;
+            slider.disabled = !list.length || isHistoricalView;
+            document.getElementById('playBtn').disabled = !list.length || isHistoricalView;
             chartCaches.clear();
             document.getElementById('dayCalendar').value = scenarioKey === 'completa' ? selectedDay : list[0].date;
             document.getElementById('daySummary').innerText = list.length ? `${{list.length}} tomas · ${{list[0].hm}} a ${{list[list.length - 1].hm}}` : 'No hay registros para esta fecha';
             syncHeaderCalendar();
+            configureDayView();
 
             if (scenarioKey === 'completa') {{
                 document.getElementById('chartTitle').innerText = `📈 Tomas del día · ${{selectedDay}}`;
@@ -1318,6 +1375,7 @@ def build():
         }}
 
         function stepToma(delta) {{
+            if (isHistoricalView) return;
             const list = getActiveList();
             let next = currentTomaIdx + delta;
             if (activeScenarioKey === 'completa' && list.length) {{
@@ -1330,10 +1388,12 @@ def build():
         }}
 
         function onSliderChange(val) {{
+            if (isHistoricalView) return;
             updateUI(parseInt(val, 10));
         }}
 
         function togglePlay() {{
+            if (isHistoricalView) return;
             const btn = document.getElementById('playBtn');
             const list = getActiveList();
             if (isPlaying) {{
@@ -1355,6 +1415,7 @@ def build():
         }}
 
         function updateChart() {{
+            if (!document.getElementById('dayCharts').open) return;
             for (const [sensor, canvasId] of [['vib', 'trendVib'], ['temp', 'trendTemp'], ['pres', 'trendPres'], ['corr', 'trendCorr']]) {{
                 drawSensorChart(sensor, canvasId);
             }}
@@ -1620,6 +1681,7 @@ def build():
             togglePlay();
         }});
 
+        document.getElementById('dayCharts').addEventListener('toggle', updateChart);
         window.addEventListener('resize', updateChart);
     </script>
 </body>
