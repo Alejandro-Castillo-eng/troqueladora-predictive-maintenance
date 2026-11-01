@@ -1,0 +1,38 @@
+﻿id_parada,timestamp_falla,tipo_falla,conjunto,fuente_maquina,fuente_tipo_maquina,fuente_tipo_falla,fuente_inicio,fuente_fin,minutos_de_desgaste_tomados,filas_de_operacion_normal_antes
+PAR-001,2025-01-14 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,13,Compressor,motor_overheat,2024-01-08 17:55:00,2024-01-10 11:46:00,2512,5888
+PAR-002,2025-01-19 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,entrenamiento,3,CNC,bearing,2024-01-06 21:27:00,2024-01-08 20:20:00,2814,186
+PAR-003,2025-01-21 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,entrenamiento,1,CNC,bearing,2024-01-04 20:04:00,2024-01-05 16:03:00,1200,0
+PAR-004,2025-01-22 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,19,Robotic Arm,motor_overheat,2024-01-10 10:20:00,2024-01-10 20:19:00,600,0
+PAR-005,2025-01-25 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,9,Pump,motor_overheat,2024-01-10 23:36:00,2024-01-12 05:35:00,1800,0
+PAR-006,2025-01-28 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,17,Robotic Arm,motor_overheat,2024-01-04 15:07:00,2024-01-05 21:06:00,1800,0
+PAR-007,2025-02-11 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,10,Pump,electrical,2024-01-09 17:41:00,2024-01-12 05:05:00,3565,4835
+PAR-008,2025-02-16 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,13,Compressor,electrical,2024-01-04 01:00:00,2024-01-06 00:18:00,2839,161
+PAR-009,2025-02-27 17:59:00,Fatiga Mecanica y Vibracion en Bancada,entrenamiento,15,Compressor,bearing,2024-01-07 17:57:00,2024-01-09 16:52:00,2816,3784
+PAR-010,2025-03-16 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,7,Pump,electrical,2024-01-01 00:00:00,2024-01-03 00:21:00,2902,7298
+PAR-011,2025-04-04 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,12,Compressor,motor_overheat,2024-01-01 00:00:00,2024-01-04 02:20:00,4461,6939
+PAR-012,2025-04-18 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,7,Pump,motor_overheat,2024-01-09 04:47:00,2024-01-11 03:42:00,2816,5584
+PAR-013,2025-04-21 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,19,Robotic Arm,motor_overheat,2024-01-02 17:29:00,2024-01-03 23:28:00,1800,0
+PAR-014,2025-04-24 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,4,CNC,electrical,2024-01-02 05:20:00,2024-01-03 11:19:00,1800,0
+PAR-015,2025-04-28 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,5,CNC,motor_overheat,2024-01-03 14:28:00,2024-01-05 06:27:00,2400,0
+PAR-016,2025-05-08 17:59:00,Fatiga Mecanica y Vibracion en Bancada,entrenamiento,13,Compressor,bearing,2024-01-06 08:50:00,2024-01-08 10:24:00,2975,3025
+PAR-017,2025-05-13 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,entrenamiento,7,Pump,bearing,2024-01-05 10:17:00,2024-01-07 09:27:00,2831,169
+PAR-018,2025-05-14 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,4,CNC,motor_overheat,2024-01-09 08:19:00,2024-01-09 18:18:00,600,0
+PAR-019,2025-05-18 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,entrenamiento,18,Robotic Arm,bearing,2024-01-11 17:47:00,2024-01-13 09:46:00,2400,0
+PAR-020,2025-05-19 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,10,Pump,electrical,2024-01-08 21:10:00,2024-01-09 07:09:00,600,0
+PAR-021,2025-05-31 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,10,Pump,electrical,2024-01-07 07:53:00,2024-01-09 07:09:00,2837,4363
+PAR-022,2025-06-11 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,entrenamiento,6,Pump,bearing,2024-01-01 00:00:00,2024-01-04 00:59:00,4380,2220
+PAR-023,2025-06-12 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,entrenamiento,12,Compressor,bearing,2024-01-10 17:04:00,2024-01-11 03:03:00,600,0
+PAR-024,2025-06-14 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,13,Compressor,motor_overheat,2024-01-09 15:47:00,2024-01-10 11:46:00,1200,0
+PAR-025,2025-07-05 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,12,Compressor,motor_overheat,2024-01-01 00:00:00,2024-01-04 02:20:00,4461,8139
+PAR-026,2025-07-11 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,19,Robotic Arm,motor_overheat,2024-01-08 21:10:00,2024-01-10 20:19:00,2830,770
+PAR-027,2025-07-31 17:59:00,Falla Critica por Desbalance y Vibracion en Rodamiento,entrenamiento,4,CNC,bearing,2024-01-11 12:14:00,2024-01-13 11:38:00,2845,9155
+PAR-028,2025-08-01 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,13,Compressor,electrical,2024-01-05 14:19:00,2024-01-06 00:18:00,600,0
+PAR-029,2025-08-06 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,10,Pump,electrical,2024-01-10 03:06:00,2024-01-12 05:05:00,3000,0
+PAR-030,2025-08-12 17:59:00,Fatiga Mecanica y Vibracion en Bancada,entrenamiento,17,Robotic Arm,bearing,2024-01-01 00:00:00,2024-01-03 06:30:00,3271,329
+PAR-031,2025-08-23 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,4,CNC,electrical,2024-01-01 00:00:00,2024-01-03 11:19:00,3560,3040
+PAR-032,2025-09-06 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,7,Pump,electrical,2024-01-01 00:00:00,2024-01-03 00:21:00,2902,5498
+PAR-033,2025-10-10 17:59:00,Sobrecarga Electrica y Friccion Excesiva,entrenamiento,17,Robotic Arm,motor_overheat,2024-01-03 19:21:00,2024-01-05 21:06:00,2986,17414
+PAR-034,2025-10-28 17:59:00,Sobrecarga Electrica y Friccion Excesiva,validacion,11,Compressor,motor_overheat,2024-01-05 02:31:00,2024-01-07 01:39:00,2829,7971
+PAR-035,2025-11-22 17:59:00,Sobrecarga Electrica y Friccion Excesiva,validacion,20,Robotic Arm,motor_overheat,2024-01-04 12:05:00,2024-01-06 18:35:00,3271,11729
+PAR-036,2025-11-25 17:59:00,Fatiga Mecanica y Vibracion en Bancada,validacion,11,Compressor,bearing,2024-01-11 13:45:00,2024-01-12 19:44:00,1800,0
+PAR-037,2025-12-01 17:59:00,Sobrecarga Electrica y Friccion Excesiva,validacion,8,Pump,motor_overheat,2024-01-01 00:03:00,2024-01-02 23:32:00,2850,750

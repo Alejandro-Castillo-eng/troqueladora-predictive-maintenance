@@ -1,0 +1,100 @@
+{
+  "archivo": "telemetria_troqueladora_v2.csv",
+  "filas": 216000,
+  "semilla": 42,
+  "fuente": "Industrial Machine Predictive Maintenance (syn), Kaggle, CC0",
+  "maquinas_fuente_reservadas_para_validacion": [
+    2,
+    8,
+    11,
+    20
+  ],
+  "maquinas_fuente_entrenamiento": [
+    1,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "segmentos_de_desgaste_disponibles": 30,
+  "segmentos_reutilizados_en_entrenamiento": 9,
+  "perfil_original": {
+    "temp_motor_c": {
+      "normal_media": 51.99390102564103,
+      "normal_desv": 1.1998345761990146,
+      "ultimo_dia_media": 74.31914492623245,
+      "ultimo_dia_en_desviaciones": 18.606934942078524,
+      "min": 46.75,
+      "max": 98.45
+    },
+    "presion_hidraulica_bar": {
+      "normal_media": 215.041803974359,
+      "normal_desv": 1.9541893280147893,
+      "ultimo_dia_media": 185.90186083123425,
+      "ultimo_dia_en_desviaciones": -14.911525063299406,
+      "min": 154.55,
+      "max": 239.97
+    },
+    "vibracion_rms_mms": {
+      "normal_media": 1.3052589743589744,
+      "normal_desv": 0.16139664540706877,
+      "ultimo_dia_media": 4.587753688377115,
+      "ultimo_dia_en_desviaciones": 20.33806034654036,
+      "min": 0.72,
+      "max": 8.12
+    },
+    "corriente_motor_a": {
+      "normal_media": 20.997758333333334,
+      "normal_desv": 0.6029308723209436,
+      "ultimo_dia_media": 31.335259985606335,
+      "ultimo_dia_en_desviaciones": 17.145417703491372,
+      "min": 18.24,
+      "max": 42.14
+    }
+  },
+  "perfil_v2": {
+    "temp_motor_c": {
+      "normal_media": 51.980906025641026,
+      "normal_desv": 1.022260458353439,
+      "ultimo_dia_media": 54.91276268441886,
+      "ultimo_dia_en_desviaciones": 2.432720073815977,
+      "min": 50.2,
+      "max": 61.17
+    },
+    "presion_hidraulica_bar": {
+      "normal_media": 215.06069217948718,
+      "normal_desv": 1.6779086567337858,
+      "ultimo_dia_media": 215.09096437567473,
+      "ultimo_dia_en_desviaciones": 0.02515641683790802,
+      "min": 212.56,
+      "max": 219.65
+    },
+    "vibracion_rms_mms": {
+      "normal_media": 1.302866153846154,
+      "normal_desv": 0.13533919208660414,
+      "ultimo_dia_media": 1.4830757466714644,
+      "ultimo_dia_en_desviaciones": 1.1017377211527966,
+      "min": 1.11,
+      "max": 2.82
+    },
+    "corriente_motor_a": {
+      "normal_media": 20.99319717948718,
+      "normal_desv": 0.5031586187172232,
+      "ultimo_dia_media": 21.4904979309104,
+      "ultimo_dia_en_desviaciones": 0.8172406161261868,
+      "min": 20.28,
+      "max": 24.09
+    }
+  }
+}

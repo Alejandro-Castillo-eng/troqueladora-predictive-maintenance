@@ -1,0 +1,143 @@
+{
+  "modelos": {
+    "original": "modelo_rul.joblib",
+    "v2": "modelo_rul_v2.joblib"
+  },
+  "datos_entrenamiento": {
+    "original": "telemetria_troqueladora.csv",
+    "v2": "telemetria_troqueladora_v2.csv"
+  },
+  "metricas_guardadas_en_cada_modelo": {
+    "original": {
+      "mae_global": 1.1300395018142522,
+      "rmse_global": 1.4316798779638578,
+      "r2_global": 0.817389713946511,
+      "mae_critico": 0.04825902566922644,
+      "rmse_critico": 0.08108154731630886,
+      "tiempo_entrenamiento_s": 2.0813703536987305
+    },
+    "v2": {
+      "mae_global": 1.5872690478522196,
+      "rmse_global": 1.8881124056060277,
+      "r2_global": 0.6823937163394307,
+      "mae_critico": 0.5401844014419852,
+      "rmse_critico": 0.7972386562093101,
+      "tiempo_entrenamiento_s": 1.4945447444915771
+    }
+  },
+  "importancia_top5": {
+    "original": {
+      "temp_motor_c_mean_15": 0.7365000247955322,
+      "vibracion_rms_mms": 0.11400000005960464,
+      "temp_motor_c_mean_60": 0.01940000057220459,
+      "corriente_motor_a_mean_15": 0.01850000023841858,
+      "temp_motor_c_zscore_nom": 0.017999999225139618
+    },
+    "v2": {
+      "temp_motor_c_zscore_nom": 0.28839999437332153,
+      "temp_motor_c_mean_60": 0.13490000367164612,
+      "indice_estres_termomecanico": 0.11640000343322754,
+      "presion_hidraulica_bar_zscore_nom": 0.06949999928474426,
+      "corriente_motor_a_zscore_nom": 0.06040000170469284
+    }
+  },
+  "resultados": {
+    "original__validacion_original": {
+      "filas": 37200,
+      "mae_horas": 10.893231088825264,
+      "r2": 0.8311390148761779,
+      "mae_horas_rul_hasta_3_dias": 0.4825902566922644,
+      "spearman_rul_menor_10": 0.9314758429732268,
+      "auc_ultimo_dia_vs_normal": 0.9999999999999999,
+      "auc_ultimos_3_dias_vs_normal": 0.9999999999999999,
+      "pct_normal_en_advertencia": 0.0,
+      "pct_normal_en_critico": 0.0,
+      "fallas_con_alerta_critica_previa": "4 de 4"
+    },
+    "original__validacion_v2": {
+      "filas": 37200,
+      "mae_horas": 35.4652579598931,
+      "r2": -0.3702448862626502,
+      "mae_horas_rul_hasta_3_dias": 27.57723776754299,
+      "spearman_rul_menor_10": 0.31300009439466964,
+      "auc_ultimo_dia_vs_normal": 0.838522054992521,
+      "auc_ultimos_3_dias_vs_normal": 0.7231691761429371,
+      "pct_normal_en_advertencia": 27.984848484848484,
+      "pct_normal_en_critico": 0.0101010101010101,
+      "fallas_con_alerta_critica_previa": "0 de 4"
+    },
+    "v2__validacion_original": {
+      "filas": 37200,
+      "mae_horas": 15.467604572648845,
+      "r2": 0.7119781154646381,
+      "mae_horas_rul_hasta_3_dias": 10.968226544752362,
+      "spearman_rul_menor_10": 0.7986252724584593,
+      "auc_ultimo_dia_vs_normal": 0.9998474554194188,
+      "auc_ultimos_3_dias_vs_normal": 0.9999083504768637,
+      "pct_normal_en_advertencia": 0.12121212121212122,
+      "pct_normal_en_critico": 0.0,
+      "fallas_con_alerta_critica_previa": "0 de 4"
+    },
+    "v2__validacion_v2": {
+      "filas": 37200,
+      "mae_horas": 15.531206198280536,
+      "r2": 0.7078848677168471,
+      "mae_horas_rul_hasta_3_dias": 5.4018440144198525,
+      "spearman_rul_menor_10": 0.8916266275725923,
+      "auc_ultimo_dia_vs_normal": 1.0,
+      "auc_ultimos_3_dias_vs_normal": 0.9982430160272725,
+      "pct_normal_en_advertencia": 0.36363636363636365,
+      "pct_normal_en_critico": 0.0,
+      "fallas_con_alerta_critica_previa": "4 de 4"
+    },
+    "original__metropt3_base_fija": {
+      "filas": 241760,
+      "mae_horas": 49.04661362547677,
+      "r2": -8.055625068887284,
+      "mae_horas_rul_hasta_3_dias": 25.74473692568585,
+      "spearman_rul_menor_10": 0.024839216809010033,
+      "auc_ultimo_dia_vs_normal": 0.6587771136413731,
+      "auc_ultimos_3_dias_vs_normal": 0.6289175842629839,
+      "pct_normal_en_advertencia": 48.42260428721001,
+      "pct_normal_en_critico": 0.0,
+      "fallas_con_alerta_critica_previa": "0 de 4"
+    },
+    "original__metropt3_base_movil": {
+      "filas": 241760,
+      "mae_horas": 29.23510661582113,
+      "r2": -2.7522523439551927,
+      "mae_horas_rul_hasta_3_dias": 54.77436514993508,
+      "spearman_rul_menor_10": 0.05540998288631376,
+      "auc_ultimo_dia_vs_normal": 0.6173109861287143,
+      "auc_ultimos_3_dias_vs_normal": 0.508664660098394,
+      "pct_normal_en_advertencia": 5.988593155893536,
+      "pct_normal_en_critico": 0.0,
+      "fallas_con_alerta_critica_previa": "0 de 4"
+    },
+    "v2__metropt3_base_fija": {
+      "filas": 241760,
+      "mae_horas": 60.82059852075136,
+      "r2": -12.965259914671073,
+      "mae_horas_rul_hasta_3_dias": 18.171690955121594,
+      "spearman_rul_menor_10": -0.05817293811895905,
+      "auc_ultimo_dia_vs_normal": 0.6522479572687253,
+      "auc_ultimos_3_dias_vs_normal": 0.6237096326502288,
+      "pct_normal_en_advertencia": 60.38509579177458,
+      "pct_normal_en_critico": 6.804614169467864,
+      "fallas_con_alerta_critica_previa": "2 de 4"
+    },
+    "v2__metropt3_base_movil": {
+      "filas": 241760,
+      "mae_horas": 38.49351079621446,
+      "r2": -4.710625889310776,
+      "mae_horas_rul_hasta_3_dias": 46.67706664088699,
+      "spearman_rul_menor_10": 0.001302737362631133,
+      "auc_ultimo_dia_vs_normal": 0.6084790003933922,
+      "auc_ultimos_3_dias_vs_normal": 0.4891532866747692,
+      "pct_normal_en_advertencia": 11.653441340166419,
+      "pct_normal_en_critico": 0.7007586194228614,
+      "fallas_con_alerta_critica_previa": "0 de 4"
+    }
+  },
+  "notas": "Metricas calculadas igual para todos: filas con RUL desconocido (tras la ultima falla sin 6000 filas restantes, o dentro de una falla en MetroPT-3) excluidas. 'Normal' = RUL real >= 10. AUC: 0.5 = azar, 1.0 = distingue siempre. Alerta critica = RUL predicho <= 1 durante 30 tomas seguidas en las 6000 tomas previas a la falla."
+}

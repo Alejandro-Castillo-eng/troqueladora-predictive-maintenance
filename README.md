@@ -51,6 +51,11 @@ Sistema integral de analítica predictiva de fallas y monitoreo en tiempo real p
 ├── entrenamiento_modelo_rul.ipynb       # Notebook con el entrenamiento explicado paso a paso
 ├── probar_modelo_metropt3.py            # Prueba del modelo con el dataset público MetroPT-3
 ├── probar_modelo_industrial_syn.py      # Prueba del modelo con Industrial Machine PdM (syn)
+├── generar_dataset_v2.py                # Telemetría 2025 v2 con comportamiento calibrado (Industrial syn)
+├── entrenar_modelo_v2.py                # Entrena modelo_rul_v2.joblib con el mismo método
+├── comparar_modelos_v1_v2.py            # Compara modelo original y v2 (incluye MetroPT-3)
+├── telemetria_troqueladora_v2.csv       # Telemetría 2025 v2 (mismas fechas, rangos y fallas)
+├── modelo_rul_v2.joblib                 # Modelo entrenado con la telemetría v2
 ├── modelo_rul.joblib                    # Modelo entrenado serializado (XGBoost + metadatos)
 ├── telemetria_troqueladora.csv          # Telemetría histórica de entrenamiento (2025)
 ├── telemetria_troqueladora_test_2026.csv # Telemetría simulada de prueba (2026)
@@ -114,6 +119,16 @@ python probar_modelo_industrial_syn.py
 ```
 
 Usa [Industrial Machine Predictive Maintenance (syn)](https://www.kaggle.com/datasets/tatheerabbas/industrial-machine-predictive-maintenance) (20 máquinas simuladas con temperatura, vibración, corriente, presión y RUL). Resultados e informe en `output/prueba_industrial_syn/`. Aunque tiene las mismas variables, el modelo **no estima bien el RUL** (MAE de 22–25 h, peor que predecir siempre el promedio; AUC 0,63–0,64). Sus alertas críticas sí se concentran cerca de la falla, pero solo aparecen antes de 20 de las 63 fallas.
+
+### 7. Dataset v2 Calibrado y Modelo v2
+
+```bash
+python generar_dataset_v2.py
+python entrenar_modelo_v2.py
+python comparar_modelos_v1_v2.py
+```
+
+`telemetria_troqueladora_v2.csv` conserva las columnas, fechas, rangos normales y las 37 fallas de la bitácora, pero toma de Industrial syn las fluctuaciones y la forma del desgaste (fallas de 0–2,4 desviaciones en lugar de 15–20). El modelo v2 detecta esas fallas sutiles en su validación (AUC 1,00, 4 de 4 alertas), pero en datos reales (MetroPT-3) no mejora al original (AUC 0,61–0,65). Informe en `output/comparacion_v1_v2/informe.md`. Los archivos originales no se modifican.
 
 ---
 
