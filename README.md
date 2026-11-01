@@ -54,6 +54,7 @@ Sistema integral de analítica predictiva de fallas y monitoreo en tiempo real p
 ├── generar_dataset_v2.py                # Telemetría 2025 v2 con comportamiento calibrado (Industrial syn)
 ├── entrenar_modelo_v2.py                # Entrena modelo_rul_v2.joblib con el mismo método
 ├── comparar_modelos_v1_v2.py            # Compara modelo original y v2 (incluye MetroPT-3)
+├── probar_modelos_otros_datasets.py     # Prueba ambos modelos con SKAB y Hydraulic Systems
 ├── telemetria_troqueladora_v2.csv       # Telemetría 2025 v2 (mismas fechas, rangos y fallas)
 ├── modelo_rul_v2.joblib                 # Modelo entrenado con la telemetría v2
 ├── modelo_rul.joblib                    # Modelo entrenado serializado (XGBoost + metadatos)
@@ -129,6 +130,14 @@ python comparar_modelos_v1_v2.py
 ```
 
 `telemetria_troqueladora_v2.csv` conserva las columnas, fechas, rangos normales y las 37 fallas de la bitácora, pero toma de Industrial syn las fluctuaciones y la forma del desgaste (fallas de 0–2,4 desviaciones en lugar de 15–20). El modelo v2 detecta esas fallas sutiles en su validación (AUC 1,00, 4 de 4 alertas), pero en datos reales (MetroPT-3) no mejora al original (AUC 0,61–0,65). Informe en `output/comparacion_v1_v2/informe.md`. Los archivos originales no se modifican.
+
+### 8. Otros Datasets Reales: SKAB y Hydraulic Systems
+
+```bash
+python probar_modelos_otros_datasets.py
+```
+
+Prueba ambos modelos con [SKAB](https://github.com/waico/SKAB) (bomba de agua con anomalías provocadas, ~4 MB) y [Hydraulic Systems](https://archive.ics.uci.edu/dataset/447/condition+monitoring+of+hydraulic+systems) (banco hidráulico con componentes degradados). Sin RUL en ninguno, se mide si el RUL predicho baja cuando el equipo está peor. En SKAB ningún modelo detecta las anomalías (AUC 0,37–0,53). En Hydraulic Systems el modelo v2 baja el RUL con el sistema degradado (AUC 0,91), pero solo por la falla del enfriador, que sube la temperatura. Informe en `output/prueba_otros_datasets/informe.md`.
 
 ---
 

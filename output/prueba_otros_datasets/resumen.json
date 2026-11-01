@@ -1,0 +1,191 @@
+{
+  "skab": {
+    "equivalencias": {
+      "temp_motor_c": "Temperature",
+      "presion_hidraulica_bar": "Pressure",
+      "vibracion_rms_mms": "Accelerometer1RMS",
+      "corriente_motor_a": "Current"
+    },
+    "escalas": {
+      "minuto": "1 fila = 1 minuto (escala real)",
+      "segundo": "1 fila = 1 segundo (escala comprimida)"
+    },
+    "resultados": {
+      "original__minuto": {
+        "filas_normales": 363,
+        "filas_anomalia": 236,
+        "rul_medio_normal": 6.852452754974365,
+        "rul_medio_anomalia": 7.094873905181885,
+        "auc_anomalia_vs_normal": 0.4536816547602372,
+        "auc_mediana_por_experimento": 0.4727272727272727,
+        "experimentos_donde_baja_el_rul": "16 de 34",
+        "pct_normal_en_advertencia": 1.9283746556473829,
+        "pct_anomalia_en_advertencia": 1.2711864406779663,
+        "pct_normal_en_critico": 0.0,
+        "pct_anomalia_en_critico": 0.0
+      },
+      "v2__minuto": {
+        "filas_normales": 363,
+        "filas_anomalia": 236,
+        "rul_medio_normal": 6.522793292999268,
+        "rul_medio_anomalia": 7.284331798553467,
+        "auc_anomalia_vs_normal": 0.3672666573282906,
+        "auc_mediana_por_experimento": 0.33116883116883117,
+        "experimentos_donde_baja_el_rul": "7 de 34",
+        "pct_normal_en_advertencia": 11.019283746556475,
+        "pct_anomalia_en_advertencia": 6.779661016949152,
+        "pct_normal_en_critico": 0.5509641873278237,
+        "pct_anomalia_en_critico": 0.0
+      },
+      "original__segundo": {
+        "filas_normales": 19073,
+        "filas_anomalia": 13067,
+        "rul_medio_normal": 6.774653434753418,
+        "rul_medio_anomalia": 6.623422622680664,
+        "auc_anomalia_vs_normal": 0.5336646858865643,
+        "auc_mediana_por_experimento": 0.5247260839840223,
+        "experimentos_donde_baja_el_rul": "21 de 34",
+        "pct_normal_en_advertencia": 1.8612698579143292,
+        "pct_anomalia_en_advertencia": 2.0586209535471034,
+        "pct_normal_en_critico": 0.0,
+        "pct_anomalia_en_critico": 0.0
+      },
+      "v2__segundo": {
+        "filas_normales": 19073,
+        "filas_anomalia": 13067,
+        "rul_medio_normal": 5.9896721839904785,
+        "rul_medio_anomalia": 5.72472620010376,
+        "auc_anomalia_vs_normal": 0.5317231919407925,
+        "auc_mediana_por_experimento": 0.5720095475058253,
+        "experimentos_donde_baja_el_rul": "20 de 34",
+        "pct_normal_en_advertencia": 15.561264614900644,
+        "pct_anomalia_en_advertencia": 21.787709497206702,
+        "pct_normal_en_critico": 0.2673936978975515,
+        "pct_anomalia_en_critico": 0.27550317593938933
+      }
+    },
+    "metodo": "Cada experimento por separado. Media base = parte normal previa a la anomalia del propio experimento; desviacion base = experimento sin anomalias. Anomalia por minuto si >= 50 % de sus segundos son anomalos. AUC: probabilidad de que una toma anomala tenga menos RUL que una normal previa (0.5 = azar)."
+  },
+  "hidraulico": {
+    "equivalencias": {
+      "temp_motor_c": "TS1",
+      "presion_hidraulica_bar": "PS1",
+      "vibracion_rms_mms": "VS1",
+      "corriente_motor_a": "EPS1",
+      "nota": "EPS1 es potencia del motor (W), usada en lugar de corriente"
+    },
+    "rangos_originales_por_ciclo": {
+      "temp_motor_c": {
+        "min": 35.31378333333334,
+        "mediana": 44.83665,
+        "max": 57.899283333333344
+      },
+      "presion_hidraulica_bar": {
+        "min": 155.39154666666667,
+        "mediana": 158.960895,
+        "max": 180.92270833333333
+      },
+      "vibracion_rms_mms": {
+        "min": 0.5243666666666668,
+        "mediana": 0.6101833333333332,
+        "max": 0.8390666666666667
+      },
+      "corriente_motor_a": {
+        "min": 2361.7472666666667,
+        "mediana": 2480.926633333333,
+        "max": 2740.640999999999
+      }
+    },
+    "base_normal": {
+      "temp_motor_c": {
+        "media_base": 38.074250666666664,
+        "desv_base": 3.779625907269101
+      },
+      "presion_hidraulica_bar": {
+        "media_base": 160.45804406666667,
+        "desv_base": 0.9191674911462323
+      },
+      "vibracion_rms_mms": {
+        "media_base": 0.558109,
+        "desv_base": 0.025565726776309475
+      },
+      "corriente_motor_a": {
+        "media_base": 2523.087149333333,
+        "desv_base": 36.60313310331152
+      }
+    },
+    "resultados": {
+      "original": {
+        "ciclos_estables": 1449,
+        "ciclos_base": 50,
+        "ciclos_severidad_alta": 760,
+        "spearman_rul_vs_severidad": -0.345441742719472,
+        "auc_severidad_alta_vs_base": 0.776078947368421,
+        "rul_medio_base": 3.8067493438720703,
+        "rul_medio_severidad_alta": 3.3501651287078857,
+        "pct_base_en_advertencia": 74.0,
+        "pct_alta_en_advertencia": 90.92105263157895,
+        "rul_medio_por_nivel_de_cada_componente": {
+          "enfriador": {
+            "100": 3.9289934635162354,
+            "20": 3.459634304046631,
+            "3": 3.019847869873047
+          },
+          "valvula": {
+            "100": 3.4350483417510986,
+            "90": 3.3899686336517334,
+            "80": 3.5009772777557373,
+            "73": 3.5643224716186523
+          },
+          "fuga_bomba": {
+            "0": 3.5896501541137695,
+            "1": 3.389028310775757,
+            "2": 3.43615984916687
+          },
+          "acumulador": {
+            "130": 3.6098792552948,
+            "115": 3.3596606254577637,
+            "100": 3.349595785140991,
+            "90": 3.5678606033325195
+          }
+        }
+      },
+      "v2": {
+        "ciclos_estables": 1449,
+        "ciclos_base": 50,
+        "ciclos_severidad_alta": 760,
+        "spearman_rul_vs_severidad": -0.48274161861696074,
+        "auc_severidad_alta_vs_base": 0.9067368421052632,
+        "rul_medio_base": 6.335072040557861,
+        "rul_medio_severidad_alta": 2.4630887508392334,
+        "pct_base_en_advertencia": 20.0,
+        "pct_alta_en_advertencia": 82.63157894736842,
+        "rul_medio_por_nivel_de_cada_componente": {
+          "enfriador": {
+            "100": 6.3677496910095215,
+            "20": 1.6934913396835327,
+            "3": 1.6786880493164062
+          },
+          "valvula": {
+            "100": 3.2929952144622803,
+            "90": 3.2167999744415283,
+            "80": 3.307077407836914,
+            "73": 3.246568441390991
+          },
+          "fuga_bomba": {
+            "0": 3.6608452796936035,
+            "1": 2.8045809268951416,
+            "2": 3.3252570629119873
+          },
+          "acumulador": {
+            "130": 3.821685791015625,
+            "115": 3.0422582626342773,
+            "100": 2.944279909133911,
+            "90": 3.2561378479003906
+          }
+        }
+      }
+    },
+    "metodo": "Media por ciclo de 60 s; 1 ciclo = 1 fila. Base normal = ciclos estables con severidad total <= 0.5. Severidad de cada componente 0 (optimo) a 1 (cerca de la falla total); total 0-4. Solo se evaluan ciclos estables."
+  }
+}
