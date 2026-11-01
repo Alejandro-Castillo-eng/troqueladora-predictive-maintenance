@@ -162,7 +162,7 @@ python entrenar_modelo_v3.py
 python comparar_modelos_v3.py
 ```
 
-`log_fallas_2024.csv` contiene las 27 fallas reales de la prensa en 2024 (desajuste de presión de corte, desalineación del troquel y sobrecarga del motor principal). `generar_dataset_v3.py` simula la telemetría de 2024 (lunes a sábado, 08:00–17:59) con una firma distinta por causa: la presión baja; la vibración sube hasta las zonas C–D de la ISO 10816; la corriente sube al 110–125 % y la temperatura sube con retraso. Incluye fallas repentinas, cambios de carga y calentamiento diario. El modelo v3 usa las cuatro variables y obtiene AUC 0,67 en su validación, una estimación más realista. En las pruebas externas no mejora en general a los modelos anteriores. Informe en `output/comparacion_v3/informe.md`.
+`log_fallas_2024.csv` contiene las 27 fallas reales de la prensa en 2024 (desajuste de presión de corte, desalineación del troquel y sobrecarga del motor principal). `generar_dataset_v3.py` simula la telemetría de 2024 (lunes a sábado, 08:00–17:59) con una firma distinta por causa: la presión baja; la vibración sube hasta las zonas C–D de la ISO 10816; la corriente sube al 110–125 % y la temperatura sube con retraso. Todas las fallas se desarrollan con tendencia durante días (sin fallas repentinas, según la experiencia con esta prensa); incluye cambios de carga y calentamiento diario. El modelo v3 usa las cuatro variables y en su validación obtiene AUC 0,985 y alerta en 5 de 6 fallas sin falsas alarmas. En las pruebas externas mejora en SKAB y en MetroPT-3 con base móvil, pero no en las demás. Informe en `output/comparacion_v3/informe.md`.
 
 ---
 

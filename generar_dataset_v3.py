@@ -15,7 +15,8 @@ Firma de cada causa (cuadro del usuario: causa -> variables relacionadas):
 Las demas variables no cambian por la falla.
 
 Variabilidad: duracion del desgaste, forma (lineal, exponencial o escalonada) e intensidad
-aleatorias por falla; ~20 % de fallas casi repentinas. Operacion normal con cambios de carga por
+aleatorias por falla. Todas las fallas tienen desgaste previo (sin fallas repentinas: segun el usuario,
+estas causas se desarrollan con tendencia durante dias). Operacion normal con cambios de carga por
 trabajo/troquel, calentamiento diario del motor y picos transitorios aislados.
 
 Los parametros se basan en referencias tecnicas generales (ISO 10816-3 para vibracion, factor de
@@ -50,7 +51,9 @@ CAUSAS = {
     "Desajuste de presión de corte": {"dias": (0.5, 4.0), "caida_bar": (8.0, 18.0)},
     "Sobrecarga del motor principal": {"dias": (1.0, 5.0), "factor_corriente": (1.10, 1.25), "sube_temp": (5.0, 15.0)},
 }
-PROB_REPENTINA = 0.2           # fallas casi sin aviso: 30-180 min de desgaste y mitad de magnitud
+# Fallas casi sin aviso (30-180 min de desgaste y mitad de magnitud). 0: segun el usuario, en esta prensa
+# las tres causas se desarrollan con tendencia durante dias.
+PROB_REPENTINA = 0.0
 SENSORES = ["temp_motor_c", "presion_hidraulica_bar", "vibracion_rms_mms", "corriente_motor_a"]
 
 

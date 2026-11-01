@@ -8,21 +8,21 @@ EV-06,Desalineación del troquel,2024-02-26 12:30:00,False,lineal,3470,5.78,,3.8
 EV-07,Sobrecarga del motor principal,2024-02-29 12:30:00,False,exponencial,2899,4.83,,,121.5,11.9
 EV-08,Sobrecarga del motor principal,2024-03-06 10:15:00,False,escalonada,2429,4.05,,,123.2,12.5
 EV-09,Desajuste de presión de corte,2024-03-08 13:15:00,False,exponencial,1150,1.92,8.7,,,
-EV-10,Desajuste de presión de corte,2024-03-13 08:30:00,True,lineal,89,0.15,6.4,,,
-EV-11,Sobrecarga del motor principal,2024-03-13 15:00:00,False,escalonada,1158,1.93,,,113.7,5.8
-EV-12,Desajuste de presión de corte,2024-04-08 14:11:00,False,lineal,514,0.86,17.7,,,
-EV-13,Desajuste de presión de corte,2024-04-11 09:30:00,False,lineal,1388,2.31,15.9,,,
-EV-14,Desajuste de presión de corte,2024-04-11 10:38:00,False,exponencial,1,0.0,17.9,,,
-EV-15,Desalineación del troquel,2024-04-17 10:30:00,True,lineal,62,0.1,,2.34,,
-EV-16,Desajuste de presión de corte,2024-05-13 09:45:00,False,lineal,1626,2.71,12.6,,,
-EV-17,Desalineación del troquel,2024-05-17 10:30:00,False,exponencial,2294,3.82,,3.59,,
-EV-18,Desalineación del troquel,2024-05-20 11:45:00,True,lineal,92,0.15,,2.8,,
-EV-19,Sobrecarga del motor principal,2024-05-20 12:30:00,False,exponencial,1811,3.02,,,114.8,14.6
-EV-20,Desajuste de presión de corte,2024-06-04 11:30:00,False,lineal,841,1.4,16.0,,,
-EV-21,Desajuste de presión de corte,2024-10-11 11:30:00,False,exponencial,2343,3.9,11.9,,,
-EV-22,Desalineación del troquel,2024-10-23 12:45:00,False,exponencial,2355,3.92,,3.43,,
-EV-23,Sobrecarga del motor principal,2024-10-28 11:30:00,True,lineal,71,0.12,,,108.1,4.9
-EV-24,Desalineación del troquel,2024-11-19 08:15:00,False,exponencial,1990,3.32,,4.11,,
-EV-25,Desalineación del troquel,2024-12-12 08:45:00,True,lineal,88,0.15,,2.2,,
-EV-26,Desajuste de presión de corte,2024-12-16 15:45:00,False,exponencial,308,0.51,15.4,,,
-EV-27,Desajuste de presión de corte,2024-12-16 17:15:00,True,lineal,53,0.09,4.9,,,
+EV-10,Desajuste de presión de corte,2024-03-13 08:30:00,False,escalonada,1138,1.9,16.1,,,
+EV-11,Sobrecarga del motor principal,2024-03-13 15:00:00,False,exponencial,1189,1.98,,,111.1,9.3
+EV-12,Desajuste de presión de corte,2024-04-08 14:11:00,False,exponencial,2347,3.91,17.0,,,
+EV-13,Desajuste de presión de corte,2024-04-11 09:30:00,False,escalonada,1388,2.31,8.1,,,
+EV-14,Desajuste de presión de corte,2024-04-11 10:38:00,False,escalonada,1,0.0,13.6,,,
+EV-15,Desalineación del troquel,2024-04-17 10:30:00,False,escalonada,898,1.5,,3.66,,
+EV-16,Desajuste de presión de corte,2024-05-13 09:45:00,False,exponencial,966,1.61,17.6,,,
+EV-17,Desalineación del troquel,2024-05-17 10:30:00,False,exponencial,1373,2.29,,3.34,,
+EV-18,Desalineación del troquel,2024-05-20 11:45:00,False,escalonada,1076,1.79,,3.43,,
+EV-19,Sobrecarga del motor principal,2024-05-20 12:30:00,False,exponencial,1256,2.09,,,116.2,9.8
+EV-20,Desajuste de presión de corte,2024-06-04 11:30:00,False,exponencial,1273,2.12,15.7,,,
+EV-21,Desajuste de presión de corte,2024-10-11 11:30:00,False,exponencial,1115,1.86,10.0,,,
+EV-22,Desalineación del troquel,2024-10-23 12:45:00,False,escalonada,611,1.02,,3.4,,
+EV-23,Sobrecarga del motor principal,2024-10-28 11:30:00,False,lineal,1386,2.31,,,121.4,8.7
+EV-24,Desalineación del troquel,2024-11-19 08:15:00,False,lineal,1325,2.21,,3.09,,
+EV-25,Desalineación del troquel,2024-12-12 08:45:00,False,exponencial,839,1.4,,4.29,,
+EV-26,Desajuste de presión de corte,2024-12-16 15:45:00,False,lineal,2278,3.8,13.0,,,
+EV-27,Desajuste de presión de corte,2024-12-16 17:15:00,False,lineal,61,0.1,16.8,,,

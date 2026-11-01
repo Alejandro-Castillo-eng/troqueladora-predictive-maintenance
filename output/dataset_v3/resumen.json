@@ -13,47 +13,47 @@
     "Desalineación del troquel": 8,
     "Sobrecarga del motor principal": 6
   },
-  "fallas_repentinas": 6,
+  "fallas_repentinas": 0,
   "estadisticas": {
     "temp_motor_c": {
       "count": 184896.0,
-      "mean": 52.11,
-      "std": 1.85,
+      "mean": 52.12,
+      "std": 1.83,
       "min": 44.3,
-      "25%": 51.33,
-      "50%": 52.21,
+      "25%": 51.34,
+      "50%": 52.22,
       "75%": 52.99,
-      "max": 68.52
+      "max": 67.26
     },
     "presion_hidraulica_bar": {
       "count": 184896.0,
-      "mean": 213.56,
-      "std": 2.72,
-      "min": 182.19,
-      "25%": 212.36,
-      "50%": 213.82,
-      "75%": 215.22,
+      "mean": 213.48,
+      "std": 2.83,
+      "min": 184.28,
+      "25%": 212.29,
+      "50%": 213.79,
+      "75%": 215.2,
       "max": 222.49
     },
     "vibracion_rms_mms": {
       "count": 184896.0,
       "mean": 1.31,
-      "std": 0.31,
+      "std": 0.33,
       "min": 0.77,
       "25%": 1.18,
       "50%": 1.26,
-      "75%": 1.34,
-      "max": 5.45
+      "75%": 1.33,
+      "max": 5.49
     },
     "corriente_motor_a": {
       "count": 184896.0,
       "mean": 21.08,
-      "std": 1.26,
+      "std": 1.27,
       "min": 17.58,
       "25%": 20.21,
       "50%": 21.04,
       "75%": 21.91,
-      "max": 29.41
+      "max": 29.29
     }
   },
   "parametros": {
@@ -107,6 +107,6 @@
         ]
       }
     },
-    "prob_repentina": 0.2
+    "prob_repentina": 0.0
   }
 }

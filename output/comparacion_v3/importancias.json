@@ -16,11 +16,11 @@
     "presion_hidraulica_bar_mean_60": 0.05689999833703041
   },
   "v3": {
-    "indice_estres_termomecanico": 0.3776000142097473,
-    "presion_hidraulica_bar_zscore_nom": 0.05400000140070915,
-    "presion_hidraulica_bar_mean_60": 0.05299999937415123,
-    "vibracion_rms_mms_mean_60": 0.041099999099969864,
-    "corriente_motor_a_zscore_nom": 0.03779999911785126,
-    "corriente_motor_a_mean_60": 0.03370000049471855
+    "indice_estres_termomecanico": 0.3483000099658966,
+    "presion_hidraulica_bar_mean_60": 0.05620000138878822,
+    "presion_hidraulica_bar_zscore_nom": 0.053700000047683716,
+    "temp_motor_c_zscore_nom": 0.04230000078678131,
+    "corriente_motor_a_zscore_nom": 0.035100001841783524,
+    "presion_hidraulica_bar_mean_15": 0.03350000083446503
   }
 }
