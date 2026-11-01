@@ -1,0 +1,28 @@
+id_evento,fecha,equipo,causa,hora_inicio,hora_fin
+EV-01,2024-01-06,Troqueladora,Desajuste de presión de corte,12:30:00,15:33:00
+EV-02,2024-01-09,Troqueladora,Desalineación del troquel,09:15:00,12:44:00
+EV-03,2024-01-12,Troqueladora,Desajuste de presión de corte,12:30:00,15:33:00
+EV-04,2024-01-15,Troqueladora,Sobrecarga del motor principal,11:09:00,11:39:00
+EV-05,2024-01-16,Troqueladora,Desajuste de presión de corte,11:15:00,12:44:00
+EV-06,2024-02-26,Troqueladora,Desalineación del troquel,12:30:00,14:04:00
+EV-07,2024-02-29,Troqueladora,Sobrecarga del motor principal,12:30:00,15:31:00
+EV-08,2024-03-06,Troqueladora,Sobrecarga del motor principal,10:15:00,12:59:00
+EV-09,2024-03-08,Troqueladora,Desajuste de presión de corte,13:15:00,15:04:00
+EV-10,2024-03-13,Troqueladora,Desajuste de presión de corte,08:30:00,12:16:00
+EV-11,2024-03-13,Troqueladora,Sobrecarga del motor principal,15:00:00,15:55:00
+EV-12,2024-04-08,Troqueladora,Desajuste de presión de corte,14:11:00,16:22:00
+EV-13,2024-04-11,Troqueladora,Desajuste de presión de corte,09:30:00,12:44:00
+EV-14,2024-04-11,Troqueladora,Desajuste de presión de corte,10:38:00,12:49:00
+EV-15,2024-04-17,Troqueladora,Desalineación del troquel,10:30:00,13:52:00
+EV-16,2024-05-13,Troqueladora,Desajuste de presión de corte,09:45:00,12:49:00
+EV-17,2024-05-17,Troqueladora,Desalineación del troquel,10:30:00,13:49:00
+EV-18,2024-05-20,Troqueladora,Desalineación del troquel,11:45:00,12:36:00
+EV-19,2024-05-20,Troqueladora,Sobrecarga del motor principal,12:30:00,15:44:00
+EV-20,2024-06-04,Troqueladora,Desajuste de presión de corte,11:30:00,13:07:00
+EV-21,2024-10-11,Troqueladora,Desajuste de presión de corte,11:30:00,11:42:00
+EV-22,2024-10-23,Troqueladora,Desalineación del troquel,12:45:00,15:39:00
+EV-23,2024-10-28,Troqueladora,Sobrecarga del motor principal,11:30:00,13:52:00
+EV-24,2024-11-19,Troqueladora,Desalineación del troquel,08:15:00,10:06:00
+EV-25,2024-12-12,Troqueladora,Desalineación del troquel,08:45:00,12:28:00
+EV-26,2024-12-16,Troqueladora,Desajuste de presión de corte,15:45:00,16:14:00
+EV-27,2024-12-16,Troqueladora,Desajuste de presión de corte,17:15:00,17:54:00
