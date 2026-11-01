@@ -5,7 +5,7 @@
 - El RUL predicho apenas cambia al acercarse la falla (correlación de rangos de 0,17).
 - Al distinguir las 10 horas previas a una falla de la operación lejana, acierta poco más que el azar (AUC de 0,63 a 0,64).
 
-Hay un matiz. Si la temperatura y la vibración se usan con sus valores originales, el modelo emite alertas críticas **64 veces más a menudo cerca de la falla que lejos de ella**, y avisa antes de 20 de las 63 fallas. Hay algo de señal, pero no la suficiente para ser útil.
+Hay un matiz. Si la temperatura y la vibración se usan con sus valores originales, el modelo emite alertas críticas **64 veces más a menudo cerca de la falla que lejos de ella**, y avisa antes de 16 de las 63 fallas. Hay algo de señal, pero no la suficiente para ser útil.
 
 ## Qué se probó
 
@@ -58,7 +58,7 @@ Para comparar en igualdad de condiciones, la columna de 2025 usa solo las tomas 
 | AUC: últimas 24 h frente a ≥ 48 h | **1,00** | 0,62 | 0,61 |
 | Tiempo lejos de la falla (≥ 48 h) en advertencia (RUL ≤ 4) | 0 % | 55,2 % | 29,6 % |
 | Tiempo lejos de la falla en crítico (RUL ≤ 1) | 0 % | 0,32 % | 0,00 % |
-| Fallas con alerta crítica sostenida (≥ 30 min) en las 100 h previas | — | **20 de 63** | 0 de 63 |
+| Fallas con alerta crítica sostenida (≥ 30 min) en las 100 h previas, sin contar el ciclo de la falla anterior | — | **16 de 63** | 0 de 63 |
 
 El AUC es la probabilidad de que una toma cercana a la falla reciba menos RUL que una toma lejana: 0,5 equivale al azar y 1,0 a distinguirlas siempre.
 
@@ -70,7 +70,9 @@ El AUC es la probabilidad de que una toma cercana a la falla reciba menos RUL qu
 | Entre 10 y 48 h antes | 43 | 2 530 | 1,70 |
 | A 48 h o más | 1 | 1 484 | **0,07** |
 
-Las alertas críticas se concentran cerca de la falla, así que hay una señal real. Pero son pocas: 43 de las 63 fallas no tuvieron ninguna. Además, las que hubo llegaron con antelaciones muy dispersas, de 3 a 100 h (mediana 38 h), lo que no coincide con lo que significa "RUL ≤ 1" (10 h). Por tipo de máquina: CNC 10, compresor 7, bomba 3 y brazo robótico 0.
+Las alertas críticas se concentran cerca de la falla, así que hay una señal real. Pero son pocas: 47 de las 63 fallas no tuvieron ninguna. Además, las que hubo llegaron con antelaciones muy dispersas, de 1,7 a 59,6 h (mediana 24,9 h), lo que no coincide con lo que significa "RUL ≤ 1" (10 h). Por tipo de máquina: CNC 9, compresor 5, bomba 2 y brazo robótico 0.
+
+*Corrección:* una versión anterior de este informe contaba 20 de 63, porque la ventana de 100 h podía incluir alertas del ciclo de la falla anterior de la misma máquina. Ahora la ventana empieza después de la falla anterior.
 
 Gráficos:
 - `rul_predicho_vs_real.png`: RUL predicho frente a real, incluida la troqueladora 2025.

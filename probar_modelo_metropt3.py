@@ -167,8 +167,10 @@ def metricas(real, pred):
 def alertas(pred, rul_sin_tope, grupo, inicio_fallas, index):
     filas = []
     ventana = int(tm.MAX_RUL_DIAS * tm.MUESTRAS_POR_TURNO_DIA)
-    for (nombre, ini, _), pos in zip(FALLAS, inicio_fallas):
-        a = max(0, pos - ventana)
+    # La ventana de cada falla empieza despues del fin de la falla anterior.
+    fin_anterior = [0] + [int(index.searchsorted(pd.Timestamp(fin), side="right")) for _, _, fin in FALLAS[:-1]]
+    for (nombre, ini, _), pos, desde in zip(FALLAS, inicio_fallas, fin_anterior):
+        a = max(0, pos - ventana, desde)
         tramo = pred[a:pos]
         critico = tramo <= UMBRAL_CRITICO
         racha = pd.Series(critico).rolling(MIN_ALERTA_SOSTENIDA).sum().to_numpy() >= MIN_ALERTA_SOSTENIDA

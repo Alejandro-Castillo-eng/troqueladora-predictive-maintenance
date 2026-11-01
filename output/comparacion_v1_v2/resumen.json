@@ -88,7 +88,7 @@
       "auc_ultimos_3_dias_vs_normal": 0.9982430160272725,
       "pct_normal_en_advertencia": 0.36363636363636365,
       "pct_normal_en_critico": 0.0,
-      "fallas_con_alerta_critica_previa": "4 de 4"
+      "fallas_con_alerta_critica_previa": "3 de 4"
     },
     "original__metropt3_base_fija": {
       "filas": 241760,

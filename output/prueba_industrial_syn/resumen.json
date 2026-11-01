@@ -173,8 +173,8 @@
         "peak": 3.4060731266459516
       },
       "fallas_analizadas": 63,
-      "fallas_con_alerta_critica_previa": 20,
-      "anticipacion_mediana_horas": 37.7,
+      "fallas_con_alerta_critica_previa": 16,
+      "anticipacion_mediana_horas": 24.9,
       "alertas_criticas_sostenidas_por_zona": {
         "cerca_rul_hasta_1": {
           "alertas": 25,

@@ -1,0 +1,97 @@
+{
+  "modelo": "modelo_rul.joblib (original)",
+  "dataset": "Industrial Machine Predictive Maintenance (syn), Kaggle, CC0",
+  "tipo_de_maquina": "CNC",
+  "variante": "temperatura y vibracion originales; corriente y presion trasladadas",
+  "base_normal_cnc": {
+    "temperature_motor": {
+      "media": 51.846601021152445,
+      "desv": 7.991663391746243
+    },
+    "pressure_level": {
+      "media": 49.54723837209303,
+      "desv": 27.987555799686973
+    },
+    "vibration_rms": {
+      "media": 1.7780073529411766,
+      "desv": 0.9866415708603951
+    },
+    "current_phase_avg": {
+      "media": 9.446395097332372,
+      "desv": 5.341426730804528
+    }
+  },
+  "resultados": {
+    "maquinas": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "fallas": 15,
+    "minutos_evaluables": 65826,
+    "auc_ultimas_10h_vs_lejos": 0.6934485058088666,
+    "auc_ultimas_10h_ic95": [
+      0.5833219162173044,
+      0.8079675580223192
+    ],
+    "auc_ultimas_24h_vs_lejos": 0.6633011948943595,
+    "auc_ultimas_24h_ic95": [
+      0.5859735296460495,
+      0.7451042987533993
+    ],
+    "fallas_con_alerta_critica": "9 de 15",
+    "pct_fallas_con_alerta_critica": 60.0,
+    "pct_fallas_con_alerta_ic95": [
+      35.746442756507705,
+      80.17577191740534
+    ],
+    "anticipacion_alerta_horas": {
+      "min": 2.2,
+      "50%": 26.3,
+      "max": 59.6
+    },
+    "alertas_criticas_por_zona": {
+      "cerca_rul_hasta_1": {
+        "alertas": 16,
+        "horas_evaluables": 135.4,
+        "alertas_por_100_horas": 11.817
+      },
+      "entre_1_y_4.8": {
+        "alertas": 20,
+        "horas_evaluables": 579.2,
+        "alertas_por_100_horas": 3.453
+      },
+      "lejos_rul_desde_4.8": {
+        "alertas": 1,
+        "horas_evaluables": 382.5,
+        "alertas_por_100_horas": 0.261
+      }
+    },
+    "pct_lejos_en_critico": 0.7886366607119515,
+    "pct_lejos_en_advertencia": 67.80968149535967,
+    "spearman_rul": 0.23845015205913667,
+    "mae": {
+      "filas": 65826,
+      "mae_dias": 2.1924333936588147,
+      "mae_horas": 21.924333936588148,
+      "rmse_dias": 2.7552526393110317,
+      "sesgo_horas": -7.272694787220919,
+      "r2": -0.31428700446752966,
+      "dentro_1_dia_pct": 29.225533983532344
+    },
+    "mae_referencia_promedio_constante": {
+      "filas": 65826,
+      "mae_dias": 2.024692246725999,
+      "mae_horas": 20.246922467259992,
+      "rmse_dias": 2.4033461180224815,
+      "sesgo_horas": 5.52665938548858e-16,
+      "r2": 0.0,
+      "dentro_1_dia_pct": 27.862850545377206
+    },
+    "rul_predicho_medio_ultimas_10h": 2.496991740810575,
+    "rul_predicho_medio_lejos": 3.6384789431409623
+  },
+  "seleccion": "Se eligio CNC por ser la maquina de mecanizado industrial mas parecida a una prensa. La eleccion se hizo despues de ver los resultados de los cuatro tipos (todas las maquinas: AUC 0.64, 20 de 63 fallas con alerta)."
+}

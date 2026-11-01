@@ -51,14 +51,14 @@ Script: `comparar_modelos_v1_v2.py`. Todas las métricas se calculan igual para 
 - Se excluyen las filas con RUL desconocido.
 - "Normal" significa RUL real ≥ 10.
 - AUC: 0,5 = azar, 1,0 = distingue siempre.
-- Alerta crítica: RUL ≤ 1 durante 30 tomas seguidas en los 10 días previos.
+- Alerta crítica: RUL ≤ 1 durante 30 tomas seguidas en los 10 días previos, sin contar las tomas anteriores a la falla previa. Una versión anterior contaba 4 de 4 para el v2 en su validación, porque incluía alertas del ciclo anterior cuando dos fallas estaban a menos de 10 días.
 
 | Evaluación | Modelo | MAE | MAE con RUL ≤ 3 días | AUC último día | Normal en advertencia | Alertas críticas antes de la falla |
 |---|---|---:|---:|---:|---:|---:|
 | Validación, datos **originales** | original | 10,9 h | 0,5 h | 1,00 | 0,0 % | 4 de 4 |
 | | v2 | 15,5 h | 11,0 h | 1,00 | 0,1 % | 0 de 4 |
 | Validación, datos **v2** | original | 35,5 h | 27,6 h | 0,84 | 28,0 % | 0 de 4 |
-| | v2 | 15,5 h | 5,4 h | **1,00** | 0,4 % | **4 de 4** |
+| | v2 | 15,5 h | 5,4 h | **1,00** | 0,4 % | **3 de 4** |
 | **MetroPT-3 (real)**, base fija | original | 49,0 h | 25,7 h | 0,66 | 48,4 % | 0 de 4 |
 | | v2 | 60,8 h | 18,2 h | 0,65 | 60,4 % | 2 de 4 (con 6,8 % del tiempo normal en crítico) |
 | **MetroPT-3 (real)**, base móvil | original | 29,2 h | 54,8 h | 0,62 | 6,0 % | 0 de 4 |
@@ -68,7 +68,7 @@ Gráficos: `comparacion_metricas.png` y `metropt3_zoom_fallas.png`.
 
 ### Qué muestran los resultados
 
-1. **El modelo v2 aprendió a detectar fallas sutiles.** En los datos v2, con máquinas fuente que no vio al entrenar, distingue el último día con AUC 1,00 y avisa antes de las 4 fallas. El modelo original, con los mismos datos, baja a AUC 0,84 y no da ninguna alerta crítica.
+1. **El modelo v2 aprendió a detectar fallas sutiles.** En los datos v2, con máquinas fuente que no vio al entrenar, distingue el último día con AUC 1,00 y avisa antes de 3 de las 4 fallas. El modelo original, con los mismos datos, baja a AUC 0,84 y no da ninguna alerta crítica.
 2. **El modelo v2 también reconoce las fallas exageradas de los datos originales** (AUC 1,00), aunque con valores de RUL menos precisos y sin llegar al umbral crítico. Es más robusto entre simulaciones.
 3. **En datos reales no hay mejora.** En MetroPT-3, ambos modelos tienen un AUC de 0,61–0,66, cerca del azar. El v2 incluso tiene más error y más falsas alarmas. Sus 2 alertas críticas con base fija no tienen valor, porque también pasa el 6,8 % del tiempo normal en crítico.
 

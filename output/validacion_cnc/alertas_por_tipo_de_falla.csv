@@ -1,0 +1,6 @@
+﻿tipo_falla,fallas,con_alerta_critica,rul_predicho_medio_ultimas_10h
+Eléctrica,1,0,3.26
+Hidráulica,2,2,1.765
+Rodamiento,5,5,1.2520000000000002
+Sin tipo indicado,5,1,3.7600000000000002
+Sobrecalentamiento,2,1,2.7199999999999998

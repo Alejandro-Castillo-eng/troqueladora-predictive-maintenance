@@ -79,8 +79,9 @@ def metricas_completas(pred, sin_tope, inicio_fallas):
     cerca3 = ok & (sin_tope <= 3)
     menor10 = ok & (sin_tope < 10)
     alertas = []
-    for pos in inicio_fallas:
-        a = max(0, pos - FILAS_TOPE)
+    for k, pos in enumerate(inicio_fallas):
+        # La ventana de cada falla empieza despues de la falla anterior.
+        a = max(0, pos - FILAS_TOPE, inicio_fallas[k - 1] + 1 if k > 0 else 0)
         tramo = pred[a:pos]
         racha = pd.Series(tramo <= pm.UMBRAL_CRITICO).rolling(pm.MIN_ALERTA_SOSTENIDA).sum() >= pm.MIN_ALERTA_SOSTENIDA
         alertas.append(bool(racha.any()))

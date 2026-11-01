@@ -151,11 +151,17 @@ def alertas_por_falla(df, pred, lecturas):
     g = lecturas.sort_values(["machine_id", "timestamp"]).groupby("machine_id")["rul_hours"]
     inicio = (lecturas.sort_values(["machine_id", "timestamp"])["rul_hours"] <= RUL_RELLENO) & \
              ~(g.shift() <= RUL_RELLENO)
-    eventos = lecturas.sort_values(["machine_id", "timestamp"])[inicio]
+    eventos = lecturas.sort_values(["machine_id", "timestamp"])[inicio].copy()
+    # La ventana de cada falla empieza despues de la falla anterior de la misma maquina, para no
+    # atribuirle alertas que corresponden al ciclo anterior.
+    eventos["falla_anterior"] = eventos.groupby("machine_id")["timestamp"].shift()
     filas = []
     for _, ev in eventos.iterrows():
+        desde = ev["timestamp"] - pd.Timedelta(hours=100)
+        if pd.notna(ev["falla_anterior"]):
+            desde = max(desde, ev["falla_anterior"])
         m = (df["machine_id"] == ev["machine_id"]) & df["evaluable"] & (df["dt"] < ev["timestamp"])
-        m &= df["dt"] >= ev["timestamp"] - pd.Timedelta(hours=100)
+        m &= df["dt"] > desde
         p = pd.Series(pred[m.to_numpy()], index=df.loc[m, "dt"])
         if len(p) == 0:
             continue

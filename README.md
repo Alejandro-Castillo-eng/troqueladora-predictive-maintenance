@@ -55,6 +55,7 @@ Sistema integral de analítica predictiva de fallas y monitoreo en tiempo real p
 ├── entrenar_modelo_v2.py                # Entrena modelo_rul_v2.joblib con el mismo método
 ├── comparar_modelos_v1_v2.py            # Compara modelo original y v2 (incluye MetroPT-3)
 ├── probar_modelos_otros_datasets.py     # Prueba ambos modelos con SKAB y Hydraulic Systems
+├── validar_modelo_cnc.py                # Validación externa del modelo con las 5 máquinas CNC de Industrial syn
 ├── telemetria_troqueladora_v2.csv       # Telemetría 2025 v2 (mismas fechas, rangos y fallas)
 ├── modelo_rul_v2.joblib                 # Modelo entrenado con la telemetría v2
 ├── modelo_rul.joblib                    # Modelo entrenado serializado (XGBoost + metadatos)
@@ -119,7 +120,7 @@ Descarga [MetroPT-3](https://doi.org/10.24432/C5VW3R) (compresor real del metro 
 python probar_modelo_industrial_syn.py
 ```
 
-Usa [Industrial Machine Predictive Maintenance (syn)](https://www.kaggle.com/datasets/tatheerabbas/industrial-machine-predictive-maintenance) (20 máquinas simuladas con temperatura, vibración, corriente, presión y RUL). Resultados e informe en `output/prueba_industrial_syn/`. Aunque tiene las mismas variables, el modelo **no estima bien el RUL** (MAE de 22–25 h, peor que predecir siempre el promedio; AUC 0,63–0,64). Sus alertas críticas sí se concentran cerca de la falla, pero solo aparecen antes de 20 de las 63 fallas.
+Usa [Industrial Machine Predictive Maintenance (syn)](https://www.kaggle.com/datasets/tatheerabbas/industrial-machine-predictive-maintenance) (20 máquinas simuladas con temperatura, vibración, corriente, presión y RUL). Resultados e informe en `output/prueba_industrial_syn/`. Aunque tiene las mismas variables, el modelo **no estima bien el RUL** (MAE de 22–25 h, peor que predecir siempre el promedio; AUC 0,63–0,64). Sus alertas críticas sí se concentran cerca de la falla, pero solo aparecen antes de 16 de las 63 fallas.
 
 ### 7. Dataset v2 Calibrado y Modelo v2
 
@@ -129,7 +130,7 @@ python entrenar_modelo_v2.py
 python comparar_modelos_v1_v2.py
 ```
 
-`telemetria_troqueladora_v2.csv` conserva las columnas, fechas, rangos normales y las 37 fallas de la bitácora, pero toma de Industrial syn las fluctuaciones y la forma del desgaste (fallas de 0–2,4 desviaciones en lugar de 15–20). El modelo v2 detecta esas fallas sutiles en su validación (AUC 1,00, 4 de 4 alertas), pero en datos reales (MetroPT-3) no mejora al original (AUC 0,61–0,65). Informe en `output/comparacion_v1_v2/informe.md`. Los archivos originales no se modifican.
+`telemetria_troqueladora_v2.csv` conserva las columnas, fechas, rangos normales y las 37 fallas de la bitácora, pero toma de Industrial syn las fluctuaciones y la forma del desgaste (fallas de 0–2,4 desviaciones en lugar de 15–20). El modelo v2 detecta esas fallas sutiles en su validación (AUC 1,00, 3 de 4 alertas), pero en datos reales (MetroPT-3) no mejora al original (AUC 0,61–0,65). Informe en `output/comparacion_v1_v2/informe.md`. Los archivos originales no se modifican.
 
 ### 8. Otros Datasets Reales: SKAB y Hydraulic Systems
 
@@ -138,6 +139,14 @@ python probar_modelos_otros_datasets.py
 ```
 
 Prueba ambos modelos con [SKAB](https://github.com/waico/SKAB) (bomba de agua con anomalías provocadas, ~4 MB) y [Hydraulic Systems](https://archive.ics.uci.edu/dataset/447/condition+monitoring+of+hydraulic+systems) (banco hidráulico con componentes degradados). Sin RUL en ninguno, se mide si el RUL predicho baja cuando el equipo está peor. En SKAB ningún modelo detecta las anomalías (AUC 0,37–0,53). En Hydraulic Systems el modelo v2 baja el RUL con el sistema degradado (AUC 0,91), pero solo por la falla del enfriador, que sube la temperatura. Informe en `output/prueba_otros_datasets/informe.md`.
+
+### 9. Validación Externa con Máquinas CNC
+
+```bash
+python validar_modelo_cnc.py
+```
+
+Valida el modelo original solo con las 5 máquinas CNC de Industrial Machine PdM (syn): 15 fallas, sin reentrenar. El modelo **detecta parcialmente la cercanía de una falla**: AUC 0,69 (IC 95 % 0,58–0,81) entre las últimas 10 h y los momentos lejanos, y alerta crítica antes de 9 de 15 fallas, con muy pocas falsas alertas críticas. No estima con precisión las horas restantes. CNC se eligió después de ver los resultados por tipo; con todas las máquinas el AUC es 0,64. Informe en `output/validacion_cnc/informe.md`.
 
 ---
 
