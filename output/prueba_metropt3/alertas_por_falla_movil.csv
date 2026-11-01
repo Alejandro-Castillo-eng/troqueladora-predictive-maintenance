@@ -1,0 +1,5 @@
+﻿falla,inicio_falla,horas_analizadas_antes,pct_tiempo_advertencia_o_critico,pct_tiempo_critico,rul_predicho_medio_ultimas_10h,anticipacion_alerta_critica_horas
+Falla 1 (fuga de aire),2020-04-18 00:00,100.0,7.18,0.0,4.64,
+Falla 2 (fuga de aire),2020-05-29 23:30,100.0,0.0,0.0,8.58,
+Falla 3 (fuga de aire),2020-06-05 10:00,100.0,1.82,0.0,7.79,
+Falla 4 (fuga de aire),2020-07-15 14:30,100.0,14.12,0.0,3.8,

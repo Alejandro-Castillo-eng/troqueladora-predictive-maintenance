@@ -1,0 +1,260 @@
+{
+  "modelo": "XGBRegressor",
+  "dataset": "MetroPT-3 (UCI, DOI 10.24432/C5VW3R, CC BY 4.0)",
+  "periodo": [
+    "2020-02-01 00:00:00",
+    "2020-09-01 03:59:00"
+  ],
+  "minutos_con_datos": 252720,
+  "fallas": [
+    {
+      "nombre": "Falla 1 (fuga de aire)",
+      "inicio": "2020-04-18 00:00",
+      "fin": "2020-04-18 23:59"
+    },
+    {
+      "nombre": "Falla 2 (fuga de aire)",
+      "inicio": "2020-05-29 23:30",
+      "fin": "2020-05-30 06:00"
+    },
+    {
+      "nombre": "Falla 3 (fuga de aire)",
+      "inicio": "2020-06-05 10:00",
+      "fin": "2020-06-07 14:30"
+    },
+    {
+      "nombre": "Falla 4 (fuga de aire)",
+      "inicio": "2020-07-15 14:30",
+      "fin": "2020-07-15 19:00"
+    }
+  ],
+  "equivalencias": {
+    "temp_motor_c": "Oil_temperature",
+    "presion_hidraulica_bar": "TP3",
+    "corriente_motor_a": "Motor_current",
+    "vibracion_rms_mms": "sin sensor: constante 1.305"
+  },
+  "referencia_troqueladora_operacion_normal": {
+    "temp_motor_c": {
+      "media": 51.99390102564103,
+      "desv": 1.1998345761990146
+    },
+    "presion_hidraulica_bar": {
+      "media": 215.041803974359,
+      "desv": 1.9541893280147893
+    },
+    "vibracion_rms_mms": {
+      "media": 1.3052589743589744,
+      "desv": 0.16139664540706877
+    },
+    "corriente_motor_a": {
+      "media": 20.997758333333334,
+      "desv": 0.6029308723209436
+    }
+  },
+  "base_fija_metropt3_febrero": {
+    "Oil_temperature": {
+      "media": 56.557237649518626,
+      "desv": 3.712422654597681
+    },
+    "TP3": {
+      "media": 8.96788916904924,
+      "desv": 0.5477027263491989
+    },
+    "Motor_current": {
+      "media": 1.2722389040163378,
+      "desv": 1.9065290722514032
+    }
+  },
+  "filas_por_grupo": {
+    "con_siguiente_falla": 190673,
+    "desconocido_final": 6000,
+    "durante_falla": 4960,
+    "sin_falla_al_menos_10": 51087
+  },
+  "filas_evaluables": 241760,
+  "resultados": {
+    "fija": {
+      "auc_distingue_cercania_falla": {
+        "hasta_1_dias": 0.6587771136413731,
+        "hasta_3_dias": 0.6289175842629839
+      },
+      "rul_predicho_medio_operacion_normal": 4.846126556396484,
+      "rul_predicho_medio_febrero_periodo_base": 6.919565677642822,
+      "rul_predicho_medio_ultimo_dia_antes_de_falla": 3.7896366119384766,
+      "rul_predicho_medio_durante_falla": 3.7052528858184814,
+      "global": {
+        "filas": 241760,
+        "mae_dias": 4.904661362547677,
+        "mae_horas": 49.04661362547677,
+        "rmse_dias": 5.265724762190788,
+        "sesgo_horas": -47.00442925159167,
+        "r2": -8.055625068887284,
+        "dentro_1_dia_pct": 3.366148246194573
+      },
+      "cercanas_hasta_3_dias": {
+        "filas": 7200,
+        "mae_dias": 2.574473692568585,
+        "mae_horas": 25.74473692568585,
+        "rmse_dias": 2.9230541978099747,
+        "sesgo_horas": 25.70431463751528,
+        "r2": -10.392331307264323,
+        "dentro_1_dia_pct": 11.444444444444445
+      },
+      "alejadas_mas_3_menos_10_dias": {
+        "filas": 16796,
+        "mae_dias": 2.6724550060231484,
+        "mae_horas": 26.724550060231486,
+        "rmse_dias": 3.3664472644560437,
+        "sesgo_horas": -19.38439032128096,
+        "r2": -1.7767427934192397,
+        "dentro_1_dia_pct": 27.86377708978328
+      },
+      "objetivo_10_sin_falla_cercana": {
+        "filas": 217764,
+        "mae_dias": 5.153873763073179,
+        "mae_horas": 51.53873763073179,
+        "rmse_dias": 5.443037627698446,
+        "sesgo_horas": -51.53873763073179,
+        "r2": null,
+        "dentro_1_dia_pct": 1.209566319501846
+      },
+      "referencia_siempre_10": {
+        "filas": 241760,
+        "mae_dias": 0.49627729980145596,
+        "mae_horas": 4.962772998014559,
+        "rmse_dias": 1.818856680004971,
+        "sesgo_horas": 4.962772998014559,
+        "r2": -0.08043608871469976,
+        "dentro_1_dia_pct": 91.06717405691595
+      },
+      "referencia_promedio_constante": {
+        "filas": 241760,
+        "mae_dias": 0.8964749118640667,
+        "mae_horas": 8.964749118640666,
+        "rmse_dias": 1.7498424112189306,
+        "sesgo_horas": 2.407663009326084e-15,
+        "r2": 0.0,
+        "dentro_1_dia_pct": 91.55857048312376
+      },
+      "falsas_alarmas_en_operacion_normal": {
+        "filas_normales": 217764,
+        "pct_tiempo_advertencia_o_critico": 48.42260428721001,
+        "pct_tiempo_critico": 0.0
+      }
+    },
+    "movil": {
+      "auc_distingue_cercania_falla": {
+        "hasta_1_dias": 0.6173109861287143,
+        "hasta_3_dias": 0.508664660098394
+      },
+      "rul_predicho_medio_operacion_normal": 7.0990471839904785,
+      "rul_predicho_medio_febrero_periodo_base": 6.829453945159912,
+      "rul_predicho_medio_ultimo_dia_antes_de_falla": 6.20475435256958,
+      "rul_predicho_medio_durante_falla": 3.9744045734405518,
+      "global": {
+        "filas": 241760,
+        "mae_dias": 2.923510661582113,
+        "mae_horas": 29.23510661582113,
+        "rmse_dias": 3.3895727314059854,
+        "sesgo_horas": -24.108019647970647,
+        "r2": -2.7522523439551927,
+        "dentro_1_dia_pct": 9.727829252150894
+      },
+      "cercanas_hasta_3_dias": {
+        "filas": 7200,
+        "mae_dias": 5.477436514993508,
+        "mae_horas": 54.77436514993508,
+        "rmse_dias": 5.748606203734757,
+        "sesgo_horas": 54.77436514993508,
+        "r2": -43.061977980199565,
+        "dentro_1_dia_pct": 0.0
+      },
+      "alejadas_mas_3_menos_10_dias": {
+        "filas": 16796,
+        "mae_dias": 2.1211781188406773,
+        "mae_horas": 21.211781188406775,
+        "rmse_dias": 2.695717885469539,
+        "sesgo_horas": 5.62637594355717,
+        "r2": -0.7804955900731851,
+        "dentro_1_dia_pct": 34.83567516075256
+      },
+      "objetivo_10_sin_falla_cercana": {
+        "filas": 217764,
+        "mae_dias": 2.900952806488172,
+        "mae_horas": 29.00952806488172,
+        "rmse_dias": 3.3319832606980633,
+        "sesgo_horas": -29.00952806488172,
+        "r2": null,
+        "dentro_1_dia_pct": 8.112911224995866
+      },
+      "referencia_siempre_10": {
+        "filas": 241760,
+        "mae_dias": 0.49627729980145596,
+        "mae_horas": 4.962772998014559,
+        "rmse_dias": 1.818856680004971,
+        "sesgo_horas": 4.962772998014559,
+        "r2": -0.08043608871469976,
+        "dentro_1_dia_pct": 91.06717405691595
+      },
+      "referencia_promedio_constante": {
+        "filas": 241760,
+        "mae_dias": 0.8964749118640667,
+        "mae_horas": 8.964749118640666,
+        "rmse_dias": 1.7498424112189306,
+        "sesgo_horas": 2.407663009326084e-15,
+        "r2": 0.0,
+        "dentro_1_dia_pct": 91.55857048312376
+      },
+      "falsas_alarmas_en_operacion_normal": {
+        "filas_normales": 217764,
+        "pct_tiempo_advertencia_o_critico": 5.988593155893536,
+        "pct_tiempo_critico": 0.0
+      }
+    }
+  },
+  "troqueladora_validacion_2025": {
+    "mae_global": 1.1300395018142522,
+    "rmse_global": 1.4316798779638578,
+    "r2_global": 0.817389713946511,
+    "mae_critico": 0.04825902566922644,
+    "rmse_critico": 0.08108154731630886,
+    "tiempo_entrenamiento_s": 2.0813703536987305,
+    "auc_distingue_cercania_falla": {
+      "hasta_1_dias": 1.0,
+      "hasta_3_dias": 1.0
+    }
+  },
+  "magnitud_de_las_fallas_en_desviaciones_normales": {
+    "troqueladora_2025_ultimo_dia": {
+      "temp_motor_c": 18.60693494207853,
+      "presion_hidraulica_bar": -14.9115250632994,
+      "corriente_motor_a": 17.14541770349137
+    },
+    "metropt3": {
+      "temp_motor_c": {
+        "ultimo_dia_antes": 1.7584137118654644,
+        "durante_falla": 5.1218908456053995
+      },
+      "presion_hidraulica_bar": {
+        "ultimo_dia_antes": -0.2165874160355324,
+        "durante_falla": -1.2428699039840934
+      },
+      "corriente_motor_a": {
+        "ultimo_dia_antes": 0.4504610033285622,
+        "durante_falla": 2.2312746427770946
+      }
+    }
+  },
+  "efecto_sin_vibracion_en_troqueladora_2025": {
+    "vibracion_real": {
+      "rul_medio_operacion_normal": 8.796095848083496,
+      "rul_medio_ultimo_dia": 0.5413822531700134
+    },
+    "vibracion_constante": {
+      "rul_medio_operacion_normal": 8.238235473632812,
+      "rul_medio_ultimo_dia": 3.1444015502929688
+    }
+  },
+  "metodo": "Sin reentrenar. Lecturas de 10 s promediadas por minuto; minutos sin datos descartados. Cada sensor se traslada a la escala de la troqueladora con su media y desviacion en operacion normal (base fija: febrero de 2020; base movil: 7 dias previos sin ventanas de falla). Vibracion constante en su valor normal. RUL de referencia = filas hasta el inicio de la siguiente falla / 600, tope 10 (1 unidad = 10 h de datos). Filas dentro de una falla y las ultimas filas sin certeza se excluyen. Tras la ultima falla, si quedan >= 6000 filas sin falla reportada, el RUL de referencia es 10."
+}

@@ -40,3 +40,6 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+
+# Datasets externos descargados por los scripts de prueba
+datos_externos/

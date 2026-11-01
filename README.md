@@ -49,6 +49,7 @@ Sistema integral de analítica predictiva de fallas y monitoreo en tiempo real p
 ├── app.py                               # Dashboard avanzado en Streamlit
 ├── train_model.py                       # Pipeline de entrenamiento y validación de Machine Learning
 ├── entrenamiento_modelo_rul.ipynb       # Notebook con el entrenamiento explicado paso a paso
+├── probar_modelo_metropt3.py            # Prueba del modelo con el dataset público MetroPT-3
 ├── modelo_rul.joblib                    # Modelo entrenado serializado (XGBoost + metadatos)
 ├── telemetria_troqueladora.csv          # Telemetría histórica de entrenamiento (2025)
 ├── telemetria_troqueladora_test_2026.csv # Telemetría simulada de prueba (2026)
@@ -96,6 +97,14 @@ jupyter notebook entrenamiento_modelo_rul.ipynb
 ```
 
 El notebook entrena una copia en memoria y **no sobrescribe** `modelo_rul.joblib`.
+
+### 5. Probar el Modelo con un Dataset Público (MetroPT-3)
+
+```bash
+python probar_modelo_metropt3.py
+```
+
+Descarga [MetroPT-3](https://doi.org/10.24432/C5VW3R) (compresor real del metro de Oporto) en `datos_externos/`, traslada sus sensores a la escala de la troqueladora y mide el error del modelo guardado sin reentrenarlo. Resultados e informe en `output/prueba_metropt3/`. En esta prueba el modelo **no generaliza**: MAE de 29–49 horas y poca capacidad de distinguir los días previos a una falla (AUC 0,51–0,66), porque las fallas reales son mucho más sutiles que las de los datos de entrenamiento.
 
 ---
 
