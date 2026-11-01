@@ -1,0 +1,356 @@
+{
+  "modelo": "XGBRegressor",
+  "dataset": "Industrial Machine Predictive Maintenance (syn), Kaggle, Tatheer Abbas, CC0",
+  "lecturas_originales": 24042,
+  "maquinas": 20,
+  "periodo": [
+    "2024-01-01 00:00:00",
+    "2024-01-14 23:59:38"
+  ],
+  "minutos_interpolados": 381670,
+  "minutos_evaluables": 275945,
+  "equivalencias": {
+    "temp_motor_c": "temperature_motor",
+    "presion_hidraulica_bar": "pressure_level",
+    "vibracion_rms_mms": "vibration_rms",
+    "corriente_motor_a": "current_phase_avg"
+  },
+  "rangos_originales_dataset": {
+    "temp_motor_c": {
+      "min": 28.0,
+      "mediana": 50.06,
+      "max": 95.0
+    },
+    "presion_hidraulica_bar": {
+      "min": 10.1,
+      "mediana": 46.3,
+      "max": 206.5
+    },
+    "vibracion_rms_mms": {
+      "min": 0.35,
+      "mediana": 1.27,
+      "max": 10.0
+    },
+    "corriente_motor_a": {
+      "min": 2.2,
+      "mediana": 6.43,
+      "max": 35.0
+    }
+  },
+  "referencia_troqueladora_operacion_normal": {
+    "temp_motor_c": {
+      "media": 51.99390102564103,
+      "desv": 1.1998345761990146
+    },
+    "presion_hidraulica_bar": {
+      "media": 215.041803974359,
+      "desv": 1.9541893280147893
+    },
+    "vibracion_rms_mms": {
+      "media": 1.3052589743589744,
+      "desv": 0.16139664540706877
+    },
+    "corriente_motor_a": {
+      "media": 20.997758333333334,
+      "desv": 0.6029308723209436
+    }
+  },
+  "base_normal_por_tipo": {
+    "CNC": {
+      "temperature_motor": {
+        "media": 51.846601021152445,
+        "desv": 7.991663391746243
+      },
+      "pressure_level": {
+        "media": 49.54723837209303,
+        "desv": 27.987555799686973
+      },
+      "vibration_rms": {
+        "media": 1.7780073529411766,
+        "desv": 0.9866415708603951
+      },
+      "current_phase_avg": {
+        "media": 9.446395097332372,
+        "desv": 5.341426730804528
+      }
+    },
+    "Compressor": {
+      "temperature_motor": {
+        "media": 54.493717774762544,
+        "desv": 7.379416200026994
+      },
+      "pressure_level": {
+        "media": 81.931799729364,
+        "desv": 35.13170119494443
+      },
+      "vibration_rms": {
+        "media": 1.79259385665529,
+        "desv": 0.7910915123885242
+      },
+      "current_phase_avg": {
+        "media": 10.876758760107816,
+        "desv": 4.523678671011885
+      }
+    },
+    "Pump": {
+      "temperature_motor": {
+        "media": 50.260645682001616,
+        "desv": 11.87645181953993
+      },
+      "pressure_level": {
+        "media": 69.26025538707103,
+        "desv": 48.112507429781
+      },
+      "vibration_rms": {
+        "media": 1.3943354943273905,
+        "desv": 0.7550096034501719
+      },
+      "current_phase_avg": {
+        "media": 8.446661329063252,
+        "desv": 4.507645177503192
+      }
+    },
+    "Robotic Arm": {
+      "temperature_motor": {
+        "media": 37.640380139643135,
+        "desv": 6.458457291427677
+      },
+      "pressure_level": {
+        "media": 32.632285938727414,
+        "desv": 14.679241939064706
+      },
+      "vibration_rms": {
+        "media": 0.8539438815276696,
+        "desv": 0.4561006505153469
+      },
+      "current_phase_avg": {
+        "media": 4.381238461538462,
+        "desv": 1.8301272910707276
+      }
+    }
+  },
+  "magnitud_ultimas_10h_en_desviaciones_normales": {
+    "industrial_syn": {
+      "temp_motor_c": 1.3655347469938308,
+      "presion_hidraulica_bar": 0.06061955277238401,
+      "vibracion_rms_mms": 0.8455564194074386,
+      "corriente_motor_a": 0.48904475091682786
+    },
+    "troqueladora_2025_ultimo_dia": {
+      "temp_motor_c": 18.60693494207853,
+      "presion_hidraulica_bar": -14.9115250632994,
+      "corriente_motor_a": 17.14541770349137
+    }
+  },
+  "resultados": {
+    "directa": {
+      "global": {
+        "filas": 275945,
+        "mae_dias": 2.224675074885532,
+        "mae_horas": 22.24675074885532,
+        "rmse_dias": 2.7729345420247755,
+        "sesgo_horas": -0.012799520304072519,
+        "r2": -0.37538925995084416,
+        "dentro_1_dia_pct": 28.22156589175379
+      },
+      "spearman": 0.17436323871850554,
+      "auc_ultimas_10h_vs_lejos": 0.6364554944752996,
+      "auc_ultimas_24h_vs_lejos": 0.6156380102004597,
+      "referencia_promedio_constante": {
+        "filas": 275945,
+        "mae_dias": 1.9807056163031664,
+        "mae_horas": 19.807056163031664,
+        "rmse_dias": 2.3644318636127393,
+        "sesgo_horas": -4.976850458160582e-15,
+        "r2": 0.0,
+        "dentro_1_dia_pct": 29.255829966116437
+      },
+      "pct_critico_lejos": 0.32234876564009257,
+      "pct_advertencia_o_critico_lejos": 55.24967989756722,
+      "rul_predicho_medio_lejos_por_modo": {
+        "idle": 4.447354595598208,
+        "normal": 4.004281780131486,
+        "peak": 3.4060731266459516
+      },
+      "fallas_analizadas": 63,
+      "fallas_con_alerta_critica_previa": 20,
+      "anticipacion_mediana_horas": 37.7,
+      "alertas_criticas_sostenidas_por_zona": {
+        "cerca_rul_hasta_1": {
+          "alertas": 25,
+          "horas_evaluables": 585.0,
+          "alertas_por_100_horas": 4.274
+        },
+        "entre_1_y_4.8": {
+          "alertas": 43,
+          "horas_evaluables": 2530.2,
+          "alertas_por_100_horas": 1.699
+        },
+        "lejos_rul_desde_4.8": {
+          "alertas": 1,
+          "horas_evaluables": 1483.9,
+          "alertas_por_100_horas": 0.067
+        }
+      },
+      "por_tipo_de_maquina": {
+        "CNC": {
+          "filas": 65826,
+          "mae_dias": 2.1924333936588147,
+          "mae_horas": 21.924333936588148,
+          "rmse_dias": 2.7552526393110317,
+          "sesgo_horas": -7.272694787220919,
+          "r2": -0.31428700446752966,
+          "dentro_1_dia_pct": 29.225533983532344,
+          "spearman": 0.23845015205913667,
+          "auc_ultimas_10h_vs_lejos": 0.6934485058088666
+        },
+        "Compresor": {
+          "filas": 77600,
+          "mae_dias": 2.0896325938933655,
+          "mae_horas": 20.896325938933657,
+          "rmse_dias": 2.652083276242333,
+          "sesgo_horas": -6.655777675561769,
+          "r2": -0.2843352084060218,
+          "dentro_1_dia_pct": 31.39561855670103,
+          "spearman": 0.2151380992635304,
+          "auc_ultimas_10h_vs_lejos": 0.6573257006936599
+        },
+        "Bomba": {
+          "filas": 67504,
+          "mae_dias": 2.1381817240302783,
+          "mae_horas": 21.381817240302784,
+          "rmse_dias": 2.660151905448309,
+          "sesgo_horas": 0.5866863541077901,
+          "r2": -0.36599419379513964,
+          "dentro_1_dia_pct": 28.303507940270205,
+          "spearman": 0.1460032318579812,
+          "auc_ultimas_10h_vs_lejos": 0.602735364481138
+        },
+        "Brazo robótico": {
+          "filas": 65015,
+          "mae_dias": 2.50830630751731,
+          "mae_horas": 25.0830630751731,
+          "rmse_dias": 3.0342840394248323,
+          "sesgo_horas": 14.64408391000843,
+          "r2": -0.5502912683005592,
+          "dentro_1_dia_pct": 23.331538875644082,
+          "spearman": 0.1952769278422626,
+          "auc_ultimas_10h_vs_lejos": 0.6867541348015003
+        }
+      }
+    },
+    "trasladada": {
+      "global": {
+        "filas": 275945,
+        "mae_dias": 2.4698029894200495,
+        "mae_horas": 24.698029894200495,
+        "rmse_dias": 3.02587591212395,
+        "sesgo_horas": 13.056128520697921,
+        "r2": -0.6377538215252849,
+        "dentro_1_dia_pct": 23.660149667506207
+      },
+      "spearman": 0.16838652121711437,
+      "auc_ultimas_10h_vs_lejos": 0.6327358822320441,
+      "auc_ultimas_24h_vs_lejos": 0.6096701927199877,
+      "referencia_promedio_constante": {
+        "filas": 275945,
+        "mae_dias": 1.9807056163031664,
+        "mae_horas": 19.807056163031664,
+        "rmse_dias": 2.3644318636127393,
+        "sesgo_horas": -4.976850458160582e-15,
+        "r2": 0.0,
+        "dentro_1_dia_pct": 29.255829966116437
+      },
+      "pct_critico_lejos": 0.0011231664308017162,
+      "pct_advertencia_o_critico_lejos": 29.569602623716783,
+      "rul_predicho_medio_lejos_por_modo": {
+        "idle": 5.131676491691347,
+        "normal": 5.72383079744833,
+        "peak": 4.669888747389953
+      },
+      "fallas_analizadas": 63,
+      "fallas_con_alerta_critica_previa": 0,
+      "anticipacion_mediana_horas": null,
+      "alertas_criticas_sostenidas_por_zona": {
+        "cerca_rul_hasta_1": {
+          "alertas": 0,
+          "horas_evaluables": 585.0,
+          "alertas_por_100_horas": 0.0
+        },
+        "entre_1_y_4.8": {
+          "alertas": 0,
+          "horas_evaluables": 2530.2,
+          "alertas_por_100_horas": 0.0
+        },
+        "lejos_rul_desde_4.8": {
+          "alertas": 0,
+          "horas_evaluables": 1483.9,
+          "alertas_por_100_horas": 0.0
+        }
+      },
+      "por_tipo_de_maquina": {
+        "CNC": {
+          "filas": 65826,
+          "mae_dias": 2.478762281811979,
+          "mae_horas": 24.787622818119793,
+          "rmse_dias": 3.034554223984657,
+          "sesgo_horas": 11.437676692776645,
+          "r2": -0.5942527102703974,
+          "dentro_1_dia_pct": 22.889131953939174,
+          "spearman": 0.1582313119118183,
+          "auc_ultimas_10h_vs_lejos": 0.6497618655641701
+        },
+        "Compresor": {
+          "filas": 77600,
+          "mae_dias": 2.463205538415985,
+          "mae_horas": 24.632055384159848,
+          "rmse_dias": 3.0074775170877395,
+          "sesgo_horas": 13.489372479399691,
+          "r2": -0.651615132182433,
+          "dentro_1_dia_pct": 23.447164948453608,
+          "spearman": 0.19247537114412114,
+          "auc_ultimas_10h_vs_lejos": 0.652583938072061
+        },
+        "Bomba": {
+          "filas": 67504,
+          "mae_dias": 2.446183267746446,
+          "mae_horas": 24.461832677464457,
+          "rmse_dias": 3.0256348270276168,
+          "sesgo_horas": 14.547266482725625,
+          "r2": -0.7671320344949613,
+          "dentro_1_dia_pct": 25.46515762028917,
+          "spearman": 0.13446076666887807,
+          "auc_ultimas_10h_vs_lejos": 0.5803572093831146
+        },
+        "Brazo robótico": {
+          "filas": 65015,
+          "mae_dias": 2.493130429376664,
+          "mae_horas": 24.931304293766637,
+          "rmse_dias": 3.0391907801734295,
+          "sesgo_horas": 12.629437785341002,
+          "r2": -0.5553092743805146,
+          "dentro_1_dia_pct": 22.820887487502883,
+          "spearman": 0.18772352749294094,
+          "auc_ultimas_10h_vs_lejos": 0.6516537964414445
+        }
+      }
+    }
+  },
+  "troqueladora_validacion_2025_mismas_metricas": {
+    "global_rul_menor_10": {
+      "filas": 17400,
+      "mae_dias": 0.8238238984931802,
+      "mae_horas": 8.238238984931801,
+      "rmse_dias": 1.4576136019167438,
+      "sesgo_horas": 6.600054938666666,
+      "r2": 0.7323550311169879,
+      "dentro_1_dia_pct": 71.21264367816092
+    },
+    "spearman": 0.9314758429732268,
+    "auc_ultimas_10h_vs_lejos": 1.0,
+    "auc_ultimas_24h_vs_lejos": 1.0,
+    "pct_critico_lejos": 0.0,
+    "pct_advertencia_o_critico_lejos": 0.0
+  },
+  "metodo": "Sin reentrenar. Cada maquina se interpola a 1 toma por minuto (sin cruzar huecos > 60 min). Variante 'directa': temperatura y vibracion originales; corriente y presion trasladadas. Variante 'trasladada': los 4 sensores trasladados con media y desviacion de las lecturas con RUL > 48 h de cada tipo de maquina. RUL real = rul_hours / 10 (1 unidad = 600 min = 10 h). Se excluyen de la evaluacion los minutos con RUL de relleno (0.5 h) y los tramos con salto de RUL hacia arriba. 'Lejos' = RUL real >= 48 h."
+}

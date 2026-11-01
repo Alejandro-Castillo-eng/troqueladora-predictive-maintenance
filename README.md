@@ -50,6 +50,7 @@ Sistema integral de analítica predictiva de fallas y monitoreo en tiempo real p
 ├── train_model.py                       # Pipeline de entrenamiento y validación de Machine Learning
 ├── entrenamiento_modelo_rul.ipynb       # Notebook con el entrenamiento explicado paso a paso
 ├── probar_modelo_metropt3.py            # Prueba del modelo con el dataset público MetroPT-3
+├── probar_modelo_industrial_syn.py      # Prueba del modelo con Industrial Machine PdM (syn)
 ├── modelo_rul.joblib                    # Modelo entrenado serializado (XGBoost + metadatos)
 ├── telemetria_troqueladora.csv          # Telemetría histórica de entrenamiento (2025)
 ├── telemetria_troqueladora_test_2026.csv # Telemetría simulada de prueba (2026)
@@ -105,6 +106,14 @@ python probar_modelo_metropt3.py
 ```
 
 Descarga [MetroPT-3](https://doi.org/10.24432/C5VW3R) (compresor real del metro de Oporto) en `datos_externos/`, traslada sus sensores a la escala de la troqueladora y mide el error del modelo guardado sin reentrenarlo. Resultados e informe en `output/prueba_metropt3/`. En esta prueba el modelo **no generaliza**: MAE de 29–49 horas y poca capacidad de distinguir los días previos a una falla (AUC 0,51–0,66), porque las fallas reales son mucho más sutiles que las de los datos de entrenamiento.
+
+### 6. Probar el Modelo con un Dataset con las Mismas 4 Variables (Industrial Machine PdM)
+
+```bash
+python probar_modelo_industrial_syn.py
+```
+
+Usa [Industrial Machine Predictive Maintenance (syn)](https://www.kaggle.com/datasets/tatheerabbas/industrial-machine-predictive-maintenance) (20 máquinas simuladas con temperatura, vibración, corriente, presión y RUL). Resultados e informe en `output/prueba_industrial_syn/`. Aunque tiene las mismas variables, el modelo **no estima bien el RUL** (MAE de 22–25 h, peor que predecir siempre el promedio; AUC 0,63–0,64). Sus alertas críticas sí se concentran cerca de la falla, pero solo aparecen antes de 20 de las 63 fallas.
 
 ---
 
