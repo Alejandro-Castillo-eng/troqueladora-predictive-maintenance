@@ -48,6 +48,7 @@ Sistema integral de analítica predictiva de fallas y monitoreo en tiempo real p
 ├── build_html.py                        # Generador del HTML con datos embebidos
 ├── app.py                               # Dashboard avanzado en Streamlit
 ├── train_model.py                       # Pipeline de entrenamiento y validación de Machine Learning
+├── entrenamiento_modelo_rul.ipynb       # Notebook con el entrenamiento explicado paso a paso
 ├── modelo_rul.joblib                    # Modelo entrenado serializado (XGBoost + metadatos)
 ├── telemetria_troqueladora.csv          # Telemetría histórica de entrenamiento (2025)
 ├── telemetria_troqueladora_test_2026.csv # Telemetría simulada de prueba (2026)
@@ -84,6 +85,17 @@ streamlit run app.py
 ```bash
 python train_model.py
 ```
+
+### 4. Ver el Entrenamiento Paso a Paso (Jupyter Notebook)
+
+`entrenamiento_modelo_rul.ipynb` recorre los mismos pasos que `train_model.py` (carga, exploración, cálculo del RUL, variables, partición, entrenamiento, evaluación e importancia de variables) con explicaciones y gráficos. Se puede leer directamente en GitHub o ejecutar en local:
+
+```bash
+pip install jupyter
+jupyter notebook entrenamiento_modelo_rul.ipynb
+```
+
+El notebook entrena una copia en memoria y **no sobrescribe** `modelo_rul.joblib`.
 
 ---
 
