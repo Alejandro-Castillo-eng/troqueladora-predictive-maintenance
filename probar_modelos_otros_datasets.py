@@ -252,7 +252,8 @@ def probar_hidraulico(modelos):
         x = np.arange(len(niveles))
         for i, k in enumerate(modelos):
             v = [resultados[k]["rul_medio_por_nivel_de_cada_componente"][nombre][str(n)] for n in niveles]
-            ax.bar(x + (i - 0.5) * 0.38, v, 0.38, color=COLORES[k], label=NOMBRES[k])
+            ancho = 0.8 / len(modelos)
+            ax.bar(x + (i - (len(modelos) - 1) / 2) * ancho, v, ancho, color=COLORES[k], label=NOMBRES[k])
         ax.set_xticks(x, [str(int(n)) for n in niveles])
         ax.set_xlabel(f"{etiquetas[nombre]}\n← óptimo · cerca de falla total →", fontsize=9)
         ax.grid(axis="y", alpha=0.2)

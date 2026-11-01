@@ -1,0 +1,26 @@
+{
+  "original": {
+    "temp_motor_c_mean_15": 0.7365000247955322,
+    "vibracion_rms_mms": 0.11400000005960464,
+    "temp_motor_c_mean_60": 0.01940000057220459,
+    "corriente_motor_a_mean_15": 0.01850000023841858,
+    "temp_motor_c_zscore_nom": 0.017999999225139618,
+    "presion_hidraulica_bar_trend_15": 0.00989999994635582
+  },
+  "v2": {
+    "temp_motor_c_zscore_nom": 0.28839999437332153,
+    "temp_motor_c_mean_60": 0.13490000367164612,
+    "indice_estres_termomecanico": 0.11640000343322754,
+    "presion_hidraulica_bar_zscore_nom": 0.06949999928474426,
+    "corriente_motor_a_zscore_nom": 0.06040000170469284,
+    "presion_hidraulica_bar_mean_60": 0.05689999833703041
+  },
+  "v3": {
+    "indice_estres_termomecanico": 0.3776000142097473,
+    "presion_hidraulica_bar_zscore_nom": 0.05400000140070915,
+    "presion_hidraulica_bar_mean_60": 0.05299999937415123,
+    "vibracion_rms_mms_mean_60": 0.041099999099969864,
+    "corriente_motor_a_zscore_nom": 0.03779999911785126,
+    "corriente_motor_a_mean_60": 0.03370000049471855
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "archivo": "telemetria_troqueladora_2024_v3.csv",
+  "filas": 184896,
+  "semilla": 2024,
+  "periodo": [
+    "2024-01-01 08:00:00",
+    "2024-12-31 17:59:00"
+  ],
+  "dias_de_turno": 314,
+  "fallas": 27,
+  "fallas_por_causa": {
+    "Desajuste de presión de corte": 13,
+    "Desalineación del troquel": 8,
+    "Sobrecarga del motor principal": 6
+  },
+  "fallas_repentinas": 6,
+  "estadisticas": {
+    "temp_motor_c": {
+      "count": 184896.0,
+      "mean": 52.11,
+      "std": 1.85,
+      "min": 44.3,
+      "25%": 51.33,
+      "50%": 52.21,
+      "75%": 52.99,
+      "max": 68.52
+    },
+    "presion_hidraulica_bar": {
+      "count": 184896.0,
+      "mean": 213.56,
+      "std": 2.72,
+      "min": 182.19,
+      "25%": 212.36,
+      "50%": 213.82,
+      "75%": 215.22,
+      "max": 222.49
+    },
+    "vibracion_rms_mms": {
+      "count": 184896.0,
+      "mean": 1.31,
+      "std": 0.31,
+      "min": 0.77,
+      "25%": 1.18,
+      "50%": 1.26,
+      "75%": 1.34,
+      "max": 5.45
+    },
+    "corriente_motor_a": {
+      "count": 184896.0,
+      "mean": 21.08,
+      "std": 1.26,
+      "min": 17.58,
+      "25%": 20.21,
+      "50%": 21.04,
+      "75%": 21.91,
+      "max": 29.41
+    }
+  },
+  "parametros": {
+    "nominal": {
+      "temp_motor_c": 52.5,
+      "presion_hidraulica_bar": 214.0,
+      "vibracion_rms_mms": 1.25,
+      "corriente_motor_a": 21.0
+    },
+    "cargas": [
+      0.92,
+      0.96,
+      1.0,
+      1.0,
+      1.04,
+      1.08
+    ],
+    "causas": {
+      "Desalineación del troquel": {
+        "dias": [
+          1.0,
+          6.0
+        ],
+        "vib_final": [
+          2.8,
+          4.5
+        ]
+      },
+      "Desajuste de presión de corte": {
+        "dias": [
+          0.5,
+          4.0
+        ],
+        "caida_bar": [
+          8.0,
+          18.0
+        ]
+      },
+      "Sobrecarga del motor principal": {
+        "dias": [
+          1.0,
+          5.0
+        ],
+        "factor_corriente": [
+          1.1,
+          1.25
+        ],
+        "sube_temp": [
+          5.0,
+          15.0
+        ]
+      }
+    },
+    "prob_repentina": 0.2
+  }
+}

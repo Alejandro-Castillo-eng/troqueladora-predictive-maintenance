@@ -56,6 +56,12 @@ Sistema integral de analítica predictiva de fallas y monitoreo en tiempo real p
 ├── comparar_modelos_v1_v2.py            # Compara modelo original y v2 (incluye MetroPT-3)
 ├── probar_modelos_otros_datasets.py     # Prueba ambos modelos con SKAB y Hydraulic Systems
 ├── validar_modelo_cnc.py                # Validación externa del modelo con las 5 máquinas CNC de Industrial syn
+├── log_fallas_2024.csv                  # Bitácora REAL de 2024: 27 fallas (causa, inicio y fin de la parada)
+├── generar_dataset_v3.py                # Telemetría 2024 v3 simulada sobre las fallas reales, con firma por causa
+├── entrenar_modelo_v3.py                # Entrena modelo_rul_v3.joblib con el mismo método
+├── comparar_modelos_v3.py               # Compara modelos original, v2 y v3 en todas las pruebas
+├── telemetria_troqueladora_2024_v3.csv  # Telemetría 2024 v3
+├── modelo_rul_v3.joblib                 # Modelo entrenado con la telemetría v3
 ├── telemetria_troqueladora_v2.csv       # Telemetría 2025 v2 (mismas fechas, rangos y fallas)
 ├── modelo_rul_v2.joblib                 # Modelo entrenado con la telemetría v2
 ├── modelo_rul.joblib                    # Modelo entrenado serializado (XGBoost + metadatos)
@@ -147,6 +153,16 @@ python validar_modelo_cnc.py
 ```
 
 Valida el modelo original solo con las 5 máquinas CNC de Industrial Machine PdM (syn): 15 fallas, sin reentrenar. El modelo **detecta parcialmente la cercanía de una falla**: AUC 0,69 (IC 95 % 0,58–0,81) entre las últimas 10 h y los momentos lejanos, y alerta crítica antes de 9 de 15 fallas, con muy pocas falsas alertas críticas. No estima con precisión las horas restantes. CNC se eligió después de ver los resultados por tipo; con todas las máquinas el AUC es 0,64. Informe en `output/validacion_cnc/informe.md`.
+
+### 10. Dataset v3 sobre las Fallas Reales de 2024
+
+```bash
+python generar_dataset_v3.py
+python entrenar_modelo_v3.py
+python comparar_modelos_v3.py
+```
+
+`log_fallas_2024.csv` contiene las 27 fallas reales de la prensa en 2024 (desajuste de presión de corte, desalineación del troquel y sobrecarga del motor principal). `generar_dataset_v3.py` simula la telemetría de 2024 (lunes a sábado, 08:00–17:59) con una firma distinta por causa: la presión baja; la vibración sube hasta las zonas C–D de la ISO 10816; la corriente sube al 110–125 % y la temperatura sube con retraso. Incluye fallas repentinas, cambios de carga y calentamiento diario. El modelo v3 usa las cuatro variables y obtiene AUC 0,67 en su validación, una estimación más realista. En las pruebas externas no mejora en general a los modelos anteriores. Informe en `output/comparacion_v3/informe.md`.
 
 ---
 

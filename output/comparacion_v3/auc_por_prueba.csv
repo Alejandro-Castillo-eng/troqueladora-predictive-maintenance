@@ -1,0 +1,9 @@
+﻿prueba,original,v2,v3
+Validación propia (último 20 %),1.0,1.0,0.668
+MetroPT-3 (real) · base fija,0.659,0.652,0.59
+MetroPT-3 (real) · base movil,0.617,0.608,0.46
+Industrial syn · 20 máquinas,0.636,0.693,0.589
+Industrial syn · 5 CNC,0.693,0.71,0.587
+SKAB (real) · minuto,0.454,0.367,0.501
+SKAB (real) · segundo,0.534,0.532,0.596
+Hydraulic Systems (real),0.776,0.907,0.867
