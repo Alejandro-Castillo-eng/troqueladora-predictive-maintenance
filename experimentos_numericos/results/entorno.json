@@ -1,0 +1,88 @@
+{
+  "python": "3.13.18",
+  "so": "Linux-6.18.44-fc-v310-x86_64-with-glibc2.39",
+  "cpu_nucleos": 4,
+  "numpy": "2.5.3",
+  "pandas": "3.0.5",
+  "scikit_learn": "1.9.1",
+  "xgboost": "3.4.1",
+  "scipy": "1.18.1",
+  "semillas": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30
+  ],
+  "semillas_barrido": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "escenarios": {
+    "tipico": {
+      "magnitud": "1.0",
+      "ruido": "1",
+      "desgaste": "None",
+      "faltantes": "0.0"
+    },
+    "borde": {
+      "magnitud": "0.5",
+      "ruido": "2",
+      "desgaste": "(0.5, 2.0)",
+      "faltantes": "0.0"
+    },
+    "extremo": {
+      "magnitud": "0.25",
+      "ruido": "3",
+      "desgaste": "(0.5, 2.0)",
+      "faltantes": "0.0"
+    },
+    "patologico": {
+      "magnitud": "0.25",
+      "ruido": "3",
+      "desgaste": "(0.2, 0.6)",
+      "faltantes": "0.3"
+    }
+  },
+  "barrido_magnitud": [
+    1.0,
+    0.75,
+    0.5,
+    0.35,
+    0.25,
+    0.15
+  ]
+}
