@@ -1,0 +1,200 @@
+{
+  "validacion_cruzada": {
+    "accuracy": 0.9583842083842083,
+    "accuracy_balanceada": 0.8761469332836146,
+    "f1_macro": 0.8597401767613475,
+    "por_clase": {
+      "normal": {
+        "precision": 0.9821428571428571,
+        "recall": 0.9773897147255496,
+        "f1": 0.9797605212015412,
+        "tomas": 103935
+      },
+      "Desajuste de presión de corte": {
+        "precision": 0.7206719817767654,
+        "recall": 0.7626939882477023,
+        "f1": 0.7410877680989678,
+        "tomas": 6637
+      },
+      "Desalineación del troquel": {
+        "precision": 0.8957303370786517,
+        "recall": 0.8304166666666667,
+        "f1": 0.8618378378378379,
+        "tomas": 4800
+      },
+      "Sobrecarga del motor principal": {
+        "precision": 0.7904290429042904,
+        "recall": 0.9340873634945398,
+        "f1": 0.8562745799070433,
+        "tomas": 2564
+      }
+    },
+    "matriz_confusion": {
+      "filas_real_columnas_predicho": [
+        "normal",
+        "Desajuste de presión de corte",
+        "Desalineación del troquel",
+        "Sobrecarga del motor principal"
+      ],
+      "valores": [
+        [
+          101585,
+          1881,
+          124,
+          345
+        ],
+        [
+          1184,
+          5062,
+          340,
+          51
+        ],
+        [
+          507,
+          68,
+          3986,
+          239
+        ],
+        [
+          156,
+          13,
+          0,
+          2395
+        ]
+      ]
+    },
+    "fallas_con_causa_correcta": "24 de 25"
+  },
+  "benchmark_industrial_syn_cnc_trasladada": {
+    "accuracy": 0.8948756726339113,
+    "accuracy_balanceada": 0.5488016724910048,
+    "f1_macro": 0.5732796544163645,
+    "por_clase": {
+      "normal": {
+        "precision": 0.9230613402479539,
+        "recall": 0.9926800575138338,
+        "f1": 0.956605714525644,
+        "tomas": 22951
+      },
+      "Desajuste de presión de corte": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tomas": 1147
+      },
+      "Desalineación del troquel": {
+        "precision": 0.6222142343637671,
+        "recall": 0.6624569460390356,
+        "f1": 0.6417052826691381,
+        "tomas": 2613
+      },
+      "Sobrecarga del motor principal": {
+        "precision": 0.9738219895287958,
+        "recall": 0.5400696864111498,
+        "f1": 0.6948076204706761,
+        "tomas": 1722
+      }
+    },
+    "matriz_confusion": {
+      "filas_real_columnas_predicho": [
+        "normal",
+        "Desajuste de presión de corte",
+        "Desalineación del troquel",
+        "Sobrecarga del motor principal"
+      ],
+      "valores": [
+        [
+          22783,
+          0,
+          144,
+          24
+        ],
+        [
+          503,
+          0,
+          643,
+          1
+        ],
+        [
+          870,
+          12,
+          1731,
+          0
+        ],
+        [
+          526,
+          2,
+          264,
+          930
+        ]
+      ]
+    },
+    "fallas_con_causa_correcta": "7 de 10"
+  },
+  "benchmark_industrial_syn_cnc_directa": {
+    "accuracy": 0.4999472443991137,
+    "accuracy_balanceada": 0.43156999603913015,
+    "f1_macro": 0.32639892919544694,
+    "por_clase": {
+      "normal": {
+        "precision": 0.9451858108108108,
+        "recall": 0.4876040259683674,
+        "f1": 0.6433272972895289,
+        "tomas": 22951
+      },
+      "Desajuste de presión de corte": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tomas": 1147
+      },
+      "Desalineación del troquel": {
+        "precision": 0.16154559505409583,
+        "recall": 1.0,
+        "f1": 0.2781562699595487,
+        "tomas": 2613
+      },
+      "Sobrecarga del motor principal": {
+        "precision": 0.9832535885167464,
+        "recall": 0.23867595818815332,
+        "f1": 0.3841121495327103,
+        "tomas": 1722
+      }
+    },
+    "matriz_confusion": {
+      "filas_real_columnas_predicho": [
+        "normal",
+        "Desajuste de presión de corte",
+        "Desalineación del troquel",
+        "Sobrecarga del motor principal"
+      ],
+      "valores": [
+        [
+          11191,
+          0,
+          11756,
+          4
+        ],
+        [
+          207,
+          0,
+          937,
+          3
+        ],
+        [
+          0,
+          0,
+          2613,
+          0
+        ],
+        [
+          442,
+          0,
+          869,
+          411
+        ]
+      ]
+    },
+    "fallas_con_causa_correcta": "6 de 10"
+  }
+}

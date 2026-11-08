@@ -1,0 +1,26 @@
+﻿falla,causa_real,causa_predicha,acierto,pct_tomas_10h_con_causa_correcta
+EV-01,Desajuste de presión de corte,Desalineación del troquel,False,43.333333333333336
+EV-02,Desalineación del troquel,Desalineación del troquel,True,100.0
+EV-03,Desajuste de presión de corte,Desajuste de presión de corte,True,100.0
+EV-04,Sobrecarga del motor principal,Sobrecarga del motor principal,True,74.16666666666667
+EV-05,Desajuste de presión de corte,Desajuste de presión de corte,True,57.638888888888886
+EV-06,Desalineación del troquel,Desalineación del troquel,True,88.66666666666667
+EV-07,Sobrecarga del motor principal,Sobrecarga del motor principal,True,100.0
+EV-08,Sobrecarga del motor principal,Sobrecarga del motor principal,True,100.0
+EV-09,Desajuste de presión de corte,Desajuste de presión de corte,True,22.5
+EV-10,Desajuste de presión de corte,Desajuste de presión de corte,True,94.5
+EV-11,Sobrecarga del motor principal,Sobrecarga del motor principal,True,91.46341463414635
+EV-12,Desajuste de presión de corte,Desajuste de presión de corte,True,100.0
+EV-13,Desajuste de presión de corte,Desajuste de presión de corte,True,68.33333333333333
+EV-15,Desalineación del troquel,Desalineación del troquel,True,50.0
+EV-16,Desajuste de presión de corte,Desajuste de presión de corte,True,68.83333333333333
+EV-17,Desalineación del troquel,Desalineación del troquel,True,100.0
+EV-18,Desalineación del troquel,Desalineación del troquel,True,60.16666666666667
+EV-20,Desajuste de presión de corte,Desajuste de presión de corte,True,90.5
+EV-21,Desajuste de presión de corte,Desajuste de presión de corte,True,92.83333333333333
+EV-22,Desalineación del troquel,Desalineación del troquel,True,87.5
+EV-23,Sobrecarga del motor principal,Sobrecarga del motor principal,True,100.0
+EV-24,Desalineación del troquel,Desalineación del troquel,True,100.0
+EV-25,Desalineación del troquel,Desalineación del troquel,True,78.0
+EV-26,Desajuste de presión de corte,Desajuste de presión de corte,True,99.83333333333333
+EV-27,Desajuste de presión de corte,Desajuste de presión de corte,True,75.40983606557377
