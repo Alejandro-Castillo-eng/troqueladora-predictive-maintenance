@@ -669,6 +669,13 @@
             padding: 20px;
         }
 
+        .fallas-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+        .year-filter { display: inline-flex; gap: 6px; }
+        .year-filter button { font: inherit; font-size: 16px; font-weight: 800; padding: 8px 16px; border: 2px solid var(--blue-accent); border-radius: 10px; background: var(--bg-card); color: var(--blue-accent); cursor: pointer; }
+        .year-filter button[aria-pressed="true"] { background: var(--blue-accent); color: var(--preset-active-text); }
+        .year-filter button:focus-visible { outline: 3px solid var(--blue-accent); outline-offset: 3px; }
+        .fallas-note { font-size: 15px; color: var(--text-muted); margin: -4px 0 12px; }
+        #fallasBody td:first-child { white-space: nowrap; }
         .table-wrap {
             overflow-x: auto;
             max-height: 280px;
@@ -869,10 +876,15 @@
         </details>
         <!-- BITÁCORA HISTÓRICA DE PARADAS -->
         <div class="table-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="font-size: 20px;">📋 Registro Histórico de Paradas de Mantenimiento (Ground Truth)</h3>
-                <span style="font-size: 16px; color: var(--text-muted);">37 eventos históricos documentados</span>
+            <div class="fallas-header">
+                <h3 style="font-size: 20px;" id="fallasTitle">📋 Registro Histórico de Paradas de Mantenimiento (Ground Truth)</h3>
+                <div class="year-filter" role="group" aria-label="Filtrar paradas por año">
+                    <button type="button" id="fallasYear2025" aria-pressed="true" onclick="setFallasYear('2025')">2025</button>
+                    <button type="button" id="fallasYear2026" aria-pressed="false" onclick="setFallasYear('2026')">2026</button>
+                </div>
+                <span style="font-size: 16px; color: var(--text-muted);" id="fallasCount">37 eventos históricos documentados</span>
             </div>
+            <p class="fallas-note" id="fallasNote" hidden>Paradas detectadas por el tablero: tramos sin lecturas dentro del turno (máquina detenida) precedidos de sensores en zona crítica, según su media de 60 min. No figuran en una bitácora, así que el componente es probable y la acción correctiva y el técnico no están registrados.</p>
             <div class="table-wrap">
                 <table id="fallasTable">
                     <thead>
@@ -1242,9 +1254,54 @@
             return true;
         }
 
+        // Paradas de 2026: no hay bitácora, así que se detectan en la telemetría como huecos de
+        // 10 minutos o más dentro del turno precedidos de sensores en zona crítica (media 60 min).
+        const PARADAS_2026 = (() => {
+            const sensors = [
+                { test: r => r.temp_m >= 68, label: r => `temperatura alta (${r.temp_m.toFixed(0)} °C)`, component: 'Devanados y ventilación del motor' },
+                { test: r => r.vib_m >= 3.8, label: r => `vibración alta (${r.vib_m.toFixed(1)} mm/s)`, component: 'Troquel' },
+                { test: r => r.pres_m <= 185, label: r => `presión baja (${r.pres_m.toFixed(0)} bar)`, component: 'Bomba hidráulica y válvula de alivio' },
+                { test: r => r.corr_m >= 28.5, label: r => `sobrecorriente (${r.corr_m.toFixed(0)} A)`, component: 'Estator y guías' }
+            ];
+            const rows = SCENARIOS.completa;
+            const stops = [];
+            for (let i = 1; i < rows.length; i++) {
+                const before = rows[i - 1], after = rows[i];
+                if (before.date !== after.date) continue;
+                const minutes = (Date.parse(after.t.replace(' ', 'T')) - Date.parse(before.t.replace(' ', 'T'))) / 60000 - 1;
+                if (minutes < 10) continue;
+                const hits = sensors.filter(sensor => sensor.test(before));
+                if (!hits.length) continue;
+                stops.push({
+                    id_parada: `DET-${String(stops.length + 1).padStart(3, '0')}`,
+                    timestamp_falla: before.t,
+                    tipo_falla: 'Parada detectada: ' + hits.map(sensor => sensor.label(before)).join(', ').replace(/, ([^,]*)$/, ' y $1'),
+                    componente_afectado: hits.map(sensor => sensor.component).join(' / ') + ' (probable)',
+                    duracion_parada_min: Math.round(minutes),
+                    accion_correctiva: 'No registrada',
+                    tecnico_responsable: '—'
+                });
+            }
+            return stops;
+        })();
+        let fallasYear = '2025';
+
+        function setFallasYear(year) {
+            fallasYear = year;
+            renderTable();
+            document.querySelector('.table-wrap').scrollTop = 0;
+        }
+
         function renderTable() {
+            const is2026 = fallasYear === '2026';
+            const list = is2026 ? PARADAS_2026 : FALLAS;
+            document.getElementById('fallasYear2025').setAttribute('aria-pressed', String(!is2026));
+            document.getElementById('fallasYear2026').setAttribute('aria-pressed', String(is2026));
+            document.getElementById('fallasTitle').textContent = is2026 ? '📋 Paradas de 2026 Detectadas por el Tablero' : '📋 Registro Histórico de Paradas de Mantenimiento (Ground Truth)';
+            document.getElementById('fallasCount').textContent = is2026 ? `${list.length} paradas detectadas · no confirmadas` : `${list.length} eventos históricos documentados`;
+            document.getElementById('fallasNote').hidden = !is2026;
             const tbody = document.getElementById('fallasBody');
-            tbody.innerHTML = FALLAS.map(f => `
+            tbody.innerHTML = list.map(f => `
                 <tr>
                     <td><b>${f.id_parada}</b></td>
                     <td>${f.timestamp_falla}</td>
