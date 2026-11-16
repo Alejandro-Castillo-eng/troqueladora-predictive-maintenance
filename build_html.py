@@ -507,6 +507,7 @@ def build():
         .rul-val.normal {{ color: #34d399; }}
         .rul-val.warning {{ color: #fbbf24; }}
         .rul-val.critical {{ color: #f87171; }}
+        .rul-val.pending {{ color: var(--text-muted); font-size: 30px; }}
 
         .rul-sub {{
             font-size: 16px;
@@ -1379,7 +1380,7 @@ def build():
             const label = document.getElementById('dailyAverageLabel');
             label.hidden = !isHistoricalView;
             label.textContent = `Promedios del ${{selectedDay.split('-').reverse().join('/')}} · ${{getActiveList().length}} lecturas`;
-            document.getElementById('healthLabel').textContent = isHistoricalView ? 'Salud promedio del día' : 'Índice de Salud de Máquina';
+            document.getElementById('healthLabel').textContent = 'Índice de Salud de Máquina';
             syncDayPlaybackButton();
         }}
 
@@ -1500,7 +1501,7 @@ def build():
             const title = document.getElementById('statusTitle');
             const rulVal = document.getElementById('rulValue');
 
-            const health = isHistoricalView ? list.reduce((sum, row) => sum + Math.max(5, Math.min(100, 100 - row.estres * 8.5)), 0) / list.length : Math.max(5, Math.min(100, 100 - (diag.estres * 8.5)));
+            const health = Math.max(5, Math.min(100, 100 - (diag.estres * 8.5)));
             document.getElementById('healthValue').innerText = health.toFixed(1) + '%';
             document.getElementById('healthBarFill').style.width = health + '%';
 
@@ -1537,8 +1538,15 @@ def build():
             }}
 
             if (isHistoricalView) {{
+                // En días anteriores no se muestran promedios de RUL ni de salud: se ven al reproducir el día.
                 title.innerText = '📊 RESUMEN DEL DÍA';
-                rulVal.innerText = `RUL AL CIERRE: ${{rulLabel(sample)}}`;
+                rulVal.className = 'rul-val pending';
+                rulVal.innerText = '▶ Pulsa «Reproducir tomas» para ver el RUL de este día';
+                const healthValue = document.getElementById('healthValue');
+                healthValue.innerText = '—';
+                healthValue.style.color = 'var(--text-muted)';
+                document.getElementById('healthBarFill').style.width = '0%';
+                document.getElementById('healthDesc').innerHTML = 'Se muestra al <b>reproducir las tomas</b>';
             }}
 
             updateChart();
