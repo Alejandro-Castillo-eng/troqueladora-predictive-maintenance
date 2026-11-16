@@ -8,6 +8,10 @@
         { key: 'corr', name: 'Corriente del motor', unit: 'A' }
     ];
 
+    const rulText = row => row.rul_d >= 1
+        ? `${row.rul_d} ${row.rul_d === 1 ? 'día operativo' : 'días operativos'}`
+        : `${row.rul_h} ${row.rul_h === 1 ? 'hora operativa' : 'horas operativas'}`;
+
     function buildReport(rows, classify) {
         const states = { NORMAL: 0, ADVERTENCIA: 0, CRITICO: 0 };
         const statistics = sensors.map(sensor => {
@@ -21,7 +25,8 @@
             };
         });
         for (const row of rows) states[classify(row).estado] += 1;
-        const rulValues = rows.map(row => row.rul).filter(Number.isFinite);
+        const rulRows = rows.filter(row => Number.isFinite(row.rul_d));
+        const lowestRul = rulRows.reduce((low, row) => !low || row.rul_d < low.rul_d || (row.rul_d === low.rul_d && row.rul_h < low.rul_h) ? row : low, null);
         const first = rows[0];
         const last = rows[rows.length - 1];
         return {
@@ -32,8 +37,8 @@
             lastTimestamp: last.t,
             states,
             sensors: statistics,
-            lastRul: Number.isFinite(last.rul) ? last.rul : null,
-            minimumRul: rulValues.length ? Math.min(...rulValues) : null
+            lastRul: Number.isFinite(last.rul_d) ? rulText(last) : null,
+            minimumRul: lowestRul ? rulText(lowestRul) : null
         };
     }
 
@@ -101,8 +106,8 @@
             if (sensor.count < report.count) addText(card, 'p', `${sensor.count} lecturas válidas de ${report.count}.`, 'daily-summary-muted');
         }
         addText(parent, 'h3', 'RUL estimado');
-        addText(parent, 'p', `Al cierre: ${number(report.lastRul)} días operativos.`);
-        addText(parent, 'p', `Mínimo del día: ${number(report.minimumRul)} días operativos.`, 'daily-summary-muted');
+        addText(parent, 'p', `Al cierre: ${report.lastRul ?? '—'}.`);
+        addText(parent, 'p', `Mínimo del día: ${report.minimumRul ?? '—'}.`, 'daily-summary-muted');
         addText(parent, 'p', '1 día operativo = 10 horas. Las alertas del panel y el RUL estimado no confirman una falla ocurrida.', 'daily-summary-note');
     }
 

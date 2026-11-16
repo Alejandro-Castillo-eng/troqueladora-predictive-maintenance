@@ -1087,6 +1087,45 @@ def build():
         const FALLAS = {fallas_json};
         const SCENARIO_METADATA = {json.dumps(scenario_metadata, ensure_ascii=False)};
         let selectedScenarioSensor = 'vib';
+        // RUL estable: número entero que ignora picos aislados del modelo.
+        // Mediana de 60 tomas; el entero solo baja tras 30 tomas seguidas más abajo
+        // y solo sube tras 60 tomas seguidas más arriba. Bajo 1 día se cuenta en horas.
+        const RUL_VENTANA = 60, RUL_CONFIRMA_BAJADA = 30, RUL_CONFIRMA_SUBIDA = 60;
+        function stableStep(state, candidate) {{
+            if (state.value === null) {{ state.value = candidate; return; }}
+            const side = Math.sign(candidate - state.value);
+            if (side === 0) {{ state.count = 0; return; }}
+            state.count = side === state.side ? state.count + 1 : 1;
+            state.side = side;
+            if (state.count >= (side < 0 ? RUL_CONFIRMA_BAJADA : RUL_CONFIRMA_SUBIDA)) {{
+                state.value = candidate;
+                state.count = 0;
+            }}
+        }}
+        function addStableRul(rows) {{
+            const recent = [], sorted = [];
+            const days = {{ value: null, count: 0, side: 0 }};
+            const hours = {{ value: null, count: 0, side: 0 }};
+            for (const row of rows) {{
+                const value = Math.min(10, Math.max(0, row.rul));
+                recent.push(value);
+                let at = sorted.findIndex(item => item > value);
+                sorted.splice(at < 0 ? sorted.length : at, 0, value);
+                if (recent.length > RUL_VENTANA) sorted.splice(sorted.indexOf(recent.shift()), 1);
+                const middle = sorted.length >> 1;
+                const median = sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+                stableStep(days, Math.floor(median));
+                stableStep(hours, Math.floor(median * 10));
+                row.rul_d = days.value;
+                row.rul_h = Math.min(days.value >= 1 ? 99 : 9, hours.value);
+            }}
+        }}
+        for (const list of Object.values(SCENARIOS)) addStableRul(list);
+        function rulLabel(sample) {{
+            if (sample.rul_d >= 1) return `${{sample.rul_d}} ${{sample.rul_d === 1 ? 'DÍA' : 'DÍAS'}}`;
+            return `${{sample.rul_h}} ${{sample.rul_h === 1 ? 'HORA' : 'HORAS'}}`;
+        }}
+
         const DAYS = new Map();
         for (const sample of SCENARIOS.completa) {{
             if (!DAYS.has(sample.date)) DAYS.set(sample.date, []);
@@ -1274,6 +1313,9 @@ def build():
                 sample[key] = rows.reduce((sum, row) => sum + row[key], 0) / rows.length;
             }}
             for (const key of ['temp', 'pres', 'vib', 'corr']) sample[key + '_m'] = sample[key];
+            const averageRul = Math.min(10, Math.max(0, sample.rul));
+            sample.rul_d = Math.floor(averageRul);
+            sample.rul_h = Math.floor(averageRul * 10);
             return sample;
         }}
 
@@ -1340,7 +1382,8 @@ def build():
             const presM60 = sample.pres_m;
             const corrM60 = sample.corr_m;
             const estres = sample.estres;
-            const predRul = sample.rul;
+            // Estado según el RUL estable (entero), no según cada predicción aislada.
+            const predRul = sample.rul_d;
 
             // Filtro de ruido transitorio aislado: valor bruto alto pero media móvil normal
             const esPicoAislado = (sample.temp > 60 && tempM60 < 54) ||
@@ -1348,8 +1391,8 @@ def build():
                                   (sample.corr > 25 && corrM60 < 22.5);
 
             // Criterios de desgaste sostenido
-            const esCritico = (tempM60 >= 68.0 || vibM60 >= 3.80 || presM60 <= 185.0 || corrM60 >= 28.5 || estres >= 6.0 || predRul <= 1.0);
-            const esAdvertencia = !esCritico && (tempM60 >= 57.5 || vibM60 >= 2.20 || presM60 <= 204.0 || corrM60 >= 23.5 || estres >= 1.5 || predRul <= 4.0);
+            const esCritico = (tempM60 >= 68.0 || vibM60 >= 3.80 || presM60 <= 185.0 || corrM60 >= 28.5 || estres >= 6.0 || predRul < 1);
+            const esAdvertencia = !esCritico && (tempM60 >= 57.5 || vibM60 >= 2.20 || presM60 <= 204.0 || corrM60 >= 23.5 || estres >= 1.5 || predRul < 4);
 
             let estado = "NORMAL";
             let rulDias = predRul;
@@ -1434,7 +1477,7 @@ def build():
                 banner.className = 'status-banner normal';
                 title.innerText = '🟢 ESTADO: OPERACIÓN NORMAL';
                 rulVal.className = 'rul-val normal';
-                rulVal.innerText = `RUL DEL MODELO: ${{sample.rul.toFixed(2)}} DÍAS`;
+                rulVal.innerText = `RUL DEL MODELO: ${{rulLabel(sample)}}`;
 
                 document.getElementById('healthValue').style.color = 'var(--green-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--green-main)';
@@ -1444,7 +1487,7 @@ def build():
                 banner.className = 'status-banner warning';
                 title.innerText = '🟡 DEGRADACIÓN DETECTADA (ALERTA PREVENTIVA)';
                 rulVal.className = 'rul-val warning';
-                rulVal.innerText = `FALTAN ${{diag.rulDias.toFixed(1)}} DÍAS PARA LA FALLA`;
+                rulVal.innerText = `FALTAN ${{rulLabel(sample)}} PARA LA FALLA`;
 
                 document.getElementById('healthValue').style.color = 'var(--yellow-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--yellow-main)';
@@ -1454,7 +1497,7 @@ def build():
                 banner.className = 'status-banner critical';
                 title.innerText = '🔴 PARADA CRÍTICA INMINENTE';
                 rulVal.className = 'rul-val critical';
-                rulVal.innerText = `🚨 FALTAN ${{diag.rulDias.toFixed(2)}} DÍAS (${{(diag.rulDias * 10).toFixed(1)}} HORAS)`;
+                rulVal.innerText = `🚨 FALTAN ${{rulLabel(sample)}} PARA LA FALLA`;
 
                 document.getElementById('healthValue').style.color = 'var(--red-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--red-main)';
@@ -1464,7 +1507,7 @@ def build():
 
             if (isHistoricalView) {{
                 title.innerText = '📊 RESUMEN DEL DÍA';
-                rulVal.innerText = `RUL PROMEDIO: ${{sample.rul.toFixed(2)}} DÍAS`;
+                rulVal.innerText = `RUL PROMEDIO: ${{rulLabel(sample)}}`;
             }}
 
             updateChart();
