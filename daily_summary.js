@@ -8,9 +8,13 @@
         { key: 'corr', name: 'Corriente del motor', unit: 'A' }
     ];
 
-    const rulText = row => row.rul_d >= 1
-        ? `${row.rul_d} ${row.rul_d === 1 ? 'día operativo' : 'días operativos'}`
-        : `${row.rul_h} ${row.rul_h === 1 ? 'hora operativa' : 'horas operativas'}`;
+    const rulText = row => {
+        const countdown = row.rul_c;
+        if (!Number.isFinite(countdown)) return 'más de 4 días operativos (sin desgaste detectado)';
+        if (countdown >= 1) return `entre ${Math.floor(countdown)} y ${Math.floor(countdown) + 1} días operativos`;
+        const hours = Math.floor(countdown * 10 + 1e-9);
+        return hours < 1 ? 'menos de 1 hora operativa' : `entre ${hours} y ${hours + 1} horas operativas`;
+    };
 
     function buildReport(rows, classify) {
         const states = { NORMAL: 0, ADVERTENCIA: 0, CRITICO: 0 };
@@ -25,8 +29,7 @@
             };
         });
         for (const row of rows) states[classify(row).estado] += 1;
-        const rulRows = rows.filter(row => Number.isFinite(row.rul_d));
-        const lowestRul = rulRows.reduce((low, row) => !low || row.rul_d < low.rul_d || (row.rul_d === low.rul_d && row.rul_h < low.rul_h) ? row : low, null);
+        const lowestRul = rows.reduce((low, row) => (Number.isFinite(row.rul_c) ? row.rul_c : Infinity) < (Number.isFinite(low?.rul_c) ? low.rul_c : Infinity) ? row : low, rows[0]);
         const first = rows[0];
         const last = rows[rows.length - 1];
         return {
@@ -37,7 +40,7 @@
             lastTimestamp: last.t,
             states,
             sensors: statistics,
-            lastRul: Number.isFinite(last.rul_d) ? rulText(last) : null,
+            lastRul: rulText(last),
             minimumRul: lowestRul ? rulText(lowestRul) : null
         };
     }

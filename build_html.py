@@ -1087,43 +1087,50 @@ def build():
         const FALLAS = {fallas_json};
         const SCENARIO_METADATA = {json.dumps(scenario_metadata, ensure_ascii=False)};
         let selectedScenarioSensor = 'vib';
-        // RUL estable: número entero que ignora picos aislados del modelo.
-        // Mediana de 60 tomas; el entero solo baja tras 30 tomas seguidas más abajo
-        // y solo sube tras 60 tomas seguidas más arriba. Bajo 1 día se cuenta en horas.
-        const RUL_VENTANA = 60, RUL_CONFIRMA_BAJADA = 30, RUL_CONFIRMA_SUBIDA = 60;
-        function stableStep(state, candidate) {{
-            if (state.value === null) {{ state.value = candidate; return; }}
-            const side = Math.sign(candidate - state.value);
-            if (side === 0) {{ state.count = 0; return; }}
-            state.count = side === state.side ? state.count + 1 : 1;
-            state.side = side;
-            if (state.count >= (side < 0 ? RUL_CONFIRMA_BAJADA : RUL_CONFIRMA_SUBIDA)) {{
-                state.value = candidate;
-                state.count = 0;
-            }}
-        }}
-        function addStableRul(rows) {{
-            const recent = [], sorted = [];
-            const days = {{ value: null, count: 0, side: 0 }};
-            const hours = {{ value: null, count: 0, side: 0 }};
+        // RUL en rangos que nunca suben dentro de un desgaste.
+        // - Sin desgaste: «MÁS DE 4 DÍAS» (en 2025 acertó el 99,7 % del tiempo).
+        // - Desgaste: la mediana de 60 tomas queda bajo 4 días durante 30 tomas y empieza
+        //   una cuenta regresiva que resta una toma (1 minuto) por paso; el modelo solo
+        //   puede adelantarla. Se muestra como rango de 1 día, o de 1 hora bajo 1 día.
+        // - Termina si la mediana pasa de 4 días durante 60 tomas, o al empezar el turno
+        //   siguiente después de llegar a 0 (se asume parada y reparación).
+        const RUL_UMBRAL = 4, RUL_VENTANA = 60, RUL_CONFIRMA = 30, RUL_RECUPERA = 60, TOMAS_POR_DIA = 600;
+        function addRulRange(rows) {{
+            let recent = [], sorted = [], countdown = null, below = 0, above = 0, repaired = false, previousDate = null;
             for (const row of rows) {{
+                if (repaired && row.date !== previousDate) {{
+                    recent = []; sorted = []; countdown = null; below = 0; above = 0; repaired = false;
+                }}
+                previousDate = row.date;
                 const value = Math.min(10, Math.max(0, row.rul));
                 recent.push(value);
-                let at = sorted.findIndex(item => item > value);
+                const at = sorted.findIndex(item => item > value);
                 sorted.splice(at < 0 ? sorted.length : at, 0, value);
                 if (recent.length > RUL_VENTANA) sorted.splice(sorted.indexOf(recent.shift()), 1);
                 const middle = sorted.length >> 1;
                 const median = sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
-                stableStep(days, Math.floor(median));
-                stableStep(hours, Math.floor(median * 10));
-                row.rul_d = days.value;
-                row.rul_h = Math.min(days.value >= 1 ? 99 : 9, hours.value);
+                if (median < RUL_UMBRAL) {{ below++; above = 0; }} else {{ above++; below = 0; }}
+                if (countdown === null) {{
+                    if (below >= RUL_CONFIRMA) countdown = median;
+                }} else if (above >= RUL_RECUPERA) {{
+                    countdown = null;
+                }} else {{
+                    countdown = Math.max(0, Math.min(countdown - 1 / TOMAS_POR_DIA, median));
+                }}
+                if (countdown === 0) repaired = true;
+                row.rul_c = countdown;
             }}
         }}
-        for (const list of Object.values(SCENARIOS)) addStableRul(list);
+        for (const list of Object.values(SCENARIOS)) addRulRange(list);
         function rulLabel(sample) {{
-            if (sample.rul_d >= 1) return `${{sample.rul_d}} ${{sample.rul_d === 1 ? 'DÍA' : 'DÍAS'}}`;
-            return `${{sample.rul_h}} ${{sample.rul_h === 1 ? 'HORA' : 'HORAS'}}`;
+            const countdown = sample.rul_c;
+            if (countdown === null || countdown === undefined) return 'MÁS DE 4 DÍAS';
+            if (countdown >= 1) {{
+                const low = Math.floor(countdown);
+                return `ENTRE ${{low}} Y ${{low + 1}} DÍAS`;
+            }}
+            const hours = Math.floor(countdown * 10 + 1e-9);
+            return hours < 1 ? 'MENOS DE 1 HORA' : `ENTRE ${{hours}} Y ${{hours + 1}} HORAS`;
         }}
 
         const DAYS = new Map();
@@ -1313,9 +1320,6 @@ def build():
                 sample[key] = rows.reduce((sum, row) => sum + row[key], 0) / rows.length;
             }}
             for (const key of ['temp', 'pres', 'vib', 'corr']) sample[key + '_m'] = sample[key];
-            const averageRul = Math.min(10, Math.max(0, sample.rul));
-            sample.rul_d = Math.floor(averageRul);
-            sample.rul_h = Math.floor(averageRul * 10);
             return sample;
         }}
 
@@ -1382,8 +1386,8 @@ def build():
             const presM60 = sample.pres_m;
             const corrM60 = sample.corr_m;
             const estres = sample.estres;
-            // Estado según el RUL estable (entero), no según cada predicción aislada.
-            const predRul = sample.rul_d;
+            // Estado según la cuenta regresiva (null = sin desgaste), no según cada predicción aislada.
+            const predRul = Number.isFinite(sample.rul_c) ? sample.rul_c : null;
 
             // Filtro de ruido transitorio aislado: valor bruto alto pero media móvil normal
             const esPicoAislado = (sample.temp > 60 && tempM60 < 54) ||
@@ -1391,8 +1395,8 @@ def build():
                                   (sample.corr > 25 && corrM60 < 22.5);
 
             // Criterios de desgaste sostenido
-            const esCritico = (tempM60 >= 68.0 || vibM60 >= 3.80 || presM60 <= 185.0 || corrM60 >= 28.5 || estres >= 6.0 || predRul < 1);
-            const esAdvertencia = !esCritico && (tempM60 >= 57.5 || vibM60 >= 2.20 || presM60 <= 204.0 || corrM60 >= 23.5 || estres >= 1.5 || predRul < 4);
+            const esCritico = (tempM60 >= 68.0 || vibM60 >= 3.80 || presM60 <= 185.0 || corrM60 >= 28.5 || estres >= 6.0 || (predRul !== null && predRul < 1));
+            const esAdvertencia = !esCritico && (tempM60 >= 57.5 || vibM60 >= 2.20 || presM60 <= 204.0 || corrM60 >= 23.5 || estres >= 1.5 || predRul !== null);
 
             let estado = "NORMAL";
             let rulDias = predRul;
@@ -1477,7 +1481,7 @@ def build():
                 banner.className = 'status-banner normal';
                 title.innerText = '🟢 ESTADO: OPERACIÓN NORMAL';
                 rulVal.className = 'rul-val normal';
-                rulVal.innerText = `RUL DEL MODELO: ${{rulLabel(sample)}}`;
+                rulVal.innerText = `RUL ESTIMADO: ${{rulLabel(sample)}}`;
 
                 document.getElementById('healthValue').style.color = 'var(--green-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--green-main)';
@@ -1507,7 +1511,7 @@ def build():
 
             if (isHistoricalView) {{
                 title.innerText = '📊 RESUMEN DEL DÍA';
-                rulVal.innerText = `RUL PROMEDIO: ${{rulLabel(sample)}}`;
+                rulVal.innerText = `RUL AL CIERRE: ${{rulLabel(sample)}}`;
             }}
 
             updateChart();
