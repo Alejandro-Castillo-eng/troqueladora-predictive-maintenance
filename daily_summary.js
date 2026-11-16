@@ -10,7 +10,10 @@
 
     const rulText = row => {
         const countdown = row.rul_c;
-        if (!Number.isFinite(countdown)) return 'más de 4 días operativos (sin desgaste detectado)';
+        if (!Number.isFinite(countdown)) {
+            const low = Number.isFinite(row.rul_r) ? row.rul_r : 4;
+            return `entre ${low} y ${low + 1} días operativos`;
+        }
         if (countdown >= 1) return `entre ${Math.floor(countdown)} y ${Math.floor(countdown) + 1} días operativos`;
         const hours = Math.floor(countdown * 10 + 1e-9);
         return hours < 1 ? 'menos de 1 hora operativa' : `entre ${hours} y ${hours + 1} horas operativas`;
@@ -29,7 +32,8 @@
             };
         });
         for (const row of rows) states[classify(row).estado] += 1;
-        const lowestRul = rows.reduce((low, row) => (Number.isFinite(row.rul_c) ? row.rul_c : Infinity) < (Number.isFinite(low?.rul_c) ? low.rul_c : Infinity) ? row : low, rows[0]);
+        const rulValue = row => Number.isFinite(row.rul_c) ? row.rul_c : (Number.isFinite(row.rul_r) ? row.rul_r : Infinity);
+        const lowestRul = rows.reduce((low, row) => rulValue(row) < rulValue(low) ? row : low, rows[0]);
         const first = rows[0];
         const last = rows[rows.length - 1];
         return {
