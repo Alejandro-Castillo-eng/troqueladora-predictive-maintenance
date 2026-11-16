@@ -187,7 +187,10 @@
         .calendar-day:not(:disabled):hover { box-shadow: inset 0 0 0 2px var(--blue-accent); }
         .calendar-day[aria-current="date"] { background: var(--blue-accent); color: var(--preset-active-text); }
         .calendar-day:disabled, .calendar-month-nav button:disabled { opacity: 0.3; cursor: default; border-color: transparent; }
-        .calendar-legend { font-size: 18px; font-weight: 700; color: var(--blue-accent); margin-top: 14px; }
+        .calendar-legend { font-size: 18px; font-weight: 700; color: var(--blue-accent); }
+        .calendar-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+        .calendar-today { font-size: 18px; font-weight: 800; padding: 10px 14px; border: 2px solid var(--blue-accent); border-radius: 10px; background: var(--blue-accent); color: var(--preset-active-text); }
+        .calendar-today:hover { filter: brightness(1.1); }
 
         @media (max-width: 700px) {
             .calendar-popover {
@@ -766,7 +769,10 @@
                         </div>
                         <div class="calendar-weekdays" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
                         <div class="calendar-days" id="calendarDays" aria-label="Días del mes"></div>
-                        <p class="calendar-legend">● Días con registros</p>
+                        <div class="calendar-footer">
+                            <p class="calendar-legend">● Días con registros</p>
+                            <button type="button" class="calendar-today" id="calendarToday" onclick="goToNow()" title="Volver a la fecha y hora actuales del equipo">🕒 Ir a hoy</button>
+                        </div>
                     </div>
                 </details>
                 <button type="button" class="btn-action" id="themeToggle" onclick="toggleTheme()" aria-pressed="false">☀️ Modo claro</button>
@@ -960,9 +966,7 @@
             return `${String(Math.floor(start / 60)).padStart(2, '0')}:${String(start % 60).padStart(2, '0')}`;
         }
 
-        function prepareLocalSession(now = new Date()) {
-            const date = localDateString(now);
-            const time = localStartTime(now);
+        function ensureLocalDay(date) {
             let sourceDay = DAYS.get(date)?.[0]?.sourceTimestamp?.slice(0, 10) || date;
             if (!DAYS.has(date)) {
                 sourceDay = availableDays.find(day => day.startsWith('2026-04-')) || availableDays[0];
@@ -975,17 +979,42 @@
                 DAYS.set(date, rows);
                 availableDays = Array.from(DAYS.keys()).sort();
             }
+            const picker = document.getElementById('dayCalendar');
+            picker.min = availableDays[0];
+            picker.max = availableDays[availableDays.length - 1];
+            return sourceDay;
+        }
+
+        function prepareLocalSession(now = new Date()) {
+            const date = localDateString(now);
+            const time = localStartTime(now);
+            const sourceDay = ensureLocalDay(date);
             localSessionStart = { enteredAt: now.toISOString(), date, time, sourceDay };
             initialDay = date;
             selectedDay = date;
             calendarMonth = null;
             isHistoricalView = false;
-            const picker = document.getElementById('dayCalendar');
-            picker.min = availableDays[0];
-            picker.max = availableDays[availableDays.length - 1];
             const label = document.getElementById('localSessionClock');
             label.textContent = `Inicio local: ${now.toLocaleString('es-CO')} · Reproducción simulada`;
             label.title = `Telemetría de referencia: ${sourceDay}. Los valores originales de los sensores se conservan.`;
+        }
+
+        function goToNow() {
+            const now = new Date();
+            const date = localDateString(now);
+            const time = localStartTime(now);
+            ensureLocalDay(date);
+            if (isPlaying) togglePlay();
+            selectedDay = date;
+            isHistoricalView = false;
+            selectScenario('completa');
+            const rows = getActiveList();
+            const index = rows.findIndex(row => row.hm >= time);
+            updateUI(index >= 0 ? index : Math.max(0, rows.length - 1));
+            if (!isPlaying && rows.length) togglePlay();
+            const calendar = document.getElementById('headerCalendar');
+            calendar.open = false;
+            calendar.querySelector('summary').focus();
         }
 
         function localStartIndex() {
