@@ -1087,21 +1087,24 @@ def build():
         const FALLAS = {fallas_json};
         const SCENARIO_METADATA = {json.dumps(scenario_metadata, ensure_ascii=False)};
         let selectedScenarioSensor = 'vib';
-        // RUL en rangos que nunca suben dentro de un desgaste.
-        // - Sin desgaste: «MÁS DE 4 DÍAS» (en 2025 acertó el 99,7 % del tiempo).
+        // RUL en rangos de 1 día que ignoran el ruido del modelo.
+        // - Desde 4 días: rango [n, n+1] según la mediana de 60 tomas. El rango baja tras
+        //   120 tomas (2 horas) seguidas más abajo y solo sube tras 600 tomas (1 día) seguidas más arriba.
         // - Desgaste: la mediana de 60 tomas queda bajo 4 días durante 30 tomas y empieza
         //   una cuenta regresiva que resta una toma (1 minuto) por paso; el modelo solo
         //   puede adelantarla. Se muestra como rango de 1 día, o de 1 hora bajo 1 día.
-        // - Termina si la mediana pasa de 4 días durante 60 tomas, o al empezar el turno
-        //   siguiente después de llegar a 0 (se asume parada y reparación).
+        // - Termina si la mediana pasa de 4 días durante 60 tomas o, si llegó a 0, cuando
+        //   en un turno posterior los sensores salen de la zona crítica (se asume reparación).
         const RUL_UMBRAL = 4, RUL_VENTANA = 60, RUL_CONFIRMA = 30, RUL_RECUPERA = 60, TOMAS_POR_DIA = 600;
+        const RANGO_CONFIRMA_BAJADA = 120, RANGO_CONFIRMA_SUBIDA = 600;
         function addRulRange(rows) {{
-            let recent = [], sorted = [], countdown = null, below = 0, above = 0, repaired = false, previousDate = null;
+            let recent = [], sorted = [], countdown = null, below = 0, above = 0, zeroDate = null;
+            let level = null, levelCount = 0, levelSide = 0;
+            const sensorsCritical = row => row.temp_m >= 68 || row.vib_m >= 3.8 || row.pres_m <= 185 || row.corr_m >= 28.5;
             for (const row of rows) {{
-                if (repaired && row.date !== previousDate) {{
-                    recent = []; sorted = []; countdown = null; below = 0; above = 0; repaired = false;
+                if (zeroDate !== null && row.date !== zeroDate && !sensorsCritical(row)) {{
+                    recent = []; sorted = []; countdown = null; below = 0; above = 0; zeroDate = null; level = null;
                 }}
-                previousDate = row.date;
                 const value = Math.min(10, Math.max(0, row.rul));
                 recent.push(value);
                 const at = sorted.findIndex(item => item > value);
@@ -1114,17 +1117,41 @@ def build():
                     if (below >= RUL_CONFIRMA) countdown = median;
                 }} else if (above >= RUL_RECUPERA) {{
                     countdown = null;
+                    zeroDate = null;
                 }} else {{
                     countdown = Math.max(0, Math.min(countdown - 1 / TOMAS_POR_DIA, median));
                 }}
-                if (countdown === 0) repaired = true;
+                if (countdown === 0 && zeroDate === null) zeroDate = row.date;
+                if (countdown === null) {{
+                    const candidate = Math.min(9, Math.max(RUL_UMBRAL, Math.floor(median)));
+                    if (level === null) {{
+                        level = candidate; levelCount = 0; levelSide = 0;
+                    }} else {{
+                        const side = Math.sign(candidate - level);
+                        if (side === 0) {{
+                            levelCount = 0;
+                        }} else {{
+                            levelCount = side === levelSide ? levelCount + 1 : 1;
+                            levelSide = side;
+                            if (levelCount >= (side < 0 ? RANGO_CONFIRMA_BAJADA : RANGO_CONFIRMA_SUBIDA)) {{
+                                level = candidate; levelCount = 0;
+                            }}
+                        }}
+                    }}
+                }} else {{
+                    level = null;
+                }}
                 row.rul_c = countdown;
+                row.rul_r = countdown === null ? level : null;
             }}
         }}
         for (const list of Object.values(SCENARIOS)) addRulRange(list);
         function rulLabel(sample) {{
             const countdown = sample.rul_c;
-            if (countdown === null || countdown === undefined) return 'MÁS DE 4 DÍAS';
+            if (countdown === null || countdown === undefined) {{
+                const low = Number.isFinite(sample.rul_r) ? sample.rul_r : RUL_UMBRAL;
+                return `ENTRE ${{low}} Y ${{low + 1}} DÍAS`;
+            }}
             if (countdown >= 1) {{
                 const low = Math.floor(countdown);
                 return `ENTRE ${{low}} Y ${{low + 1}} DÍAS`;
@@ -1481,7 +1508,7 @@ def build():
                 banner.className = 'status-banner normal';
                 title.innerText = '🟢 ESTADO: OPERACIÓN NORMAL';
                 rulVal.className = 'rul-val normal';
-                rulVal.innerText = `RUL ESTIMADO: ${{rulLabel(sample)}}`;
+                rulVal.innerText = `FALTAN ${{rulLabel(sample)}} PARA LA FALLA`;
 
                 document.getElementById('healthValue').style.color = 'var(--green-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--green-main)';
@@ -1501,7 +1528,7 @@ def build():
                 banner.className = 'status-banner critical';
                 title.innerText = '🔴 PARADA CRÍTICA INMINENTE';
                 rulVal.className = 'rul-val critical';
-                rulVal.innerText = `🚨 FALTAN ${{rulLabel(sample)}} PARA LA FALLA`;
+                rulVal.innerText = sample.rul_c === 0 ? '🚨 FALLA INMINENTE · DETENER Y REVISAR' : `🚨 FALTAN ${{rulLabel(sample)}} PARA LA FALLA`;
 
                 document.getElementById('healthValue').style.color = 'var(--red-main)';
                 document.getElementById('healthBarFill').style.background = 'var(--red-main)';
