@@ -1182,13 +1182,13 @@
 
         function selectDay(date, keepPlaying = false) {
             if (!date) return;
-            const historical = !keepPlaying && (date < selectedDay || (date === selectedDay && isHistoricalView));
+            // Cualquier día elegido (anterior o posterior) se reproduce desde su primera toma.
             if (!keepPlaying && isPlaying) togglePlay();
             selectedDay = date;
-            isHistoricalView = historical;
+            isHistoricalView = false;
             activeScenarioKey = 'completa';
             selectScenario('completa', keepPlaying);
-            if (!historical && !isPlaying && getActiveList().length) togglePlay();
+            if (!isPlaying && getActiveList().length) togglePlay();
         }
 
         function dailyAverageSample(rows) {
